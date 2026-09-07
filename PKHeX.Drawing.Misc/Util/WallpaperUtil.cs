@@ -10,17 +10,17 @@ namespace PKHeX.Drawing.Misc;
 /// </summary>
 public static class WallpaperUtil
 {
-    private static Bitmap DefaultWallpaper => Resources.box_wp16xy;
+    private static RawImage DefaultWallpaper => Resources.box_wp16xy;
 
     /// <summary>
     /// Gets the wallpaper image for the specified save file and box index.
     /// </summary>
     /// <param name="sav">The save file to get the wallpaper for.</param>
     /// <param name="box">The box index.</param>
-    /// <returns>A <see cref="Bitmap"/> representing the wallpaper image.</returns>
-    public static Bitmap WallpaperImage(this SaveFile sav, int box) => GetWallpaper(sav, box);
+    /// <returns>A <see cref="RawImage"/> representing the wallpaper image.</returns>
+    public static RawImage WallpaperImage(this SaveFile sav, int box) => GetWallpaper(sav, box);
 
-    private static Bitmap GetWallpaper(SaveFile sav, int box)
+    private static RawImage GetWallpaper(SaveFile sav, int box)
     {
         if (sav is not IBoxDetailWallpaper wp)
             return DefaultWallpaper;
@@ -33,7 +33,7 @@ public static class WallpaperUtil
 
         int wallpaper = wp.GetBoxWallpaper(box);
         string s = GetWallpaperResourceName(sav.Version, wallpaper);
-        return (Bitmap?)Resources.ResourceManager.GetObject(s) ?? DefaultWallpaper;
+        return (RawImage?)Resources.ResourceManager.GetObject(s) ?? DefaultWallpaper;
     }
 
     /// <summary>

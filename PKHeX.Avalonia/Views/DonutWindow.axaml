@@ -1,0 +1,308 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:PKHeX.Avalonia.ViewModels"
+        mc:Ignorable="d" d:DesignWidth="940" d:DesignHeight="720"
+        x:Class="PKHeX.Avalonia.Views.DonutWindow"
+        x:DataType="vm:DonutViewModel"
+        Title="Donut Bakery Editor (Legends Z-A)"
+        Width="960" Height="720"
+        MinWidth="880" MinHeight="620"
+        WindowStartupLocation="CenterOwner">
+
+    <Grid RowDefinitions="Auto, *, Auto" Margin="16">
+        <!-- Top Bakery Banner -->
+        <Border Grid.Row="0" Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,0,12">
+            <Grid ColumnDefinitions="*, Auto">
+                <StackPanel Grid.Column="0" Spacing="4">
+                    <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                        <TextBlock Text="🍩 Lumiose Donut Bakery &amp; Meal Powers" FontWeight="Bold" FontSize="18" Foreground="#FF6F00" />
+                        <Border Background="#FF6F00" CornerRadius="10" Padding="8,2" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding OccupiedCount, StringFormat='{}{0} Baked / 999 Slots'}"
+                                       Foreground="White" FontSize="11" FontWeight="Bold" />
+                        </Border>
+                    </StackPanel>
+                    <TextBlock Text="Configure freshly baked donuts with berry ingredients, star ratings, and meal powers." FontSize="12" Foreground="Gray" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                    <Button Content="✨ All 5⭐ Shiny Boost" Click="OnAllShinyClick" Height="28" FontSize="11" ToolTip.Tip="Fill all 999 slots with 5-star Shiny Boost templates" />
+                    <Button Content="⚡ All Lv.3 Powers" Click="OnAllLevel3Click" Height="28" FontSize="11" ToolTip.Tip="Fill all 999 slots with Level 3 Power donuts" />
+                    <Button Content="🔄 Recalc All" Click="OnRecalculateAllClick" Height="28" FontSize="11" ToolTip.Tip="Recalculate stats from berries for all occupied slots" />
+                    <Button Content="🗑 Clear All" Click="OnClearAllClick" Height="28" FontSize="11" Foreground="#D32F2F" ToolTip.Tip="Wipe all 999 slots" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Main Body: List + Editor -->
+        <Grid Grid.Row="1" ColumnDefinitions="300, 12, *">
+            <!-- Left: Donut Pocket Slots List -->
+            <Border Grid.Column="0" Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                    BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                    BorderThickness="1" CornerRadius="8" Padding="8">
+                <Grid RowDefinitions="Auto, Auto, *">
+                    <!-- Search & Filter Bar -->
+                    <TextBox Grid.Row="0" Text="{Binding FilterText, Mode=TwoWay}"
+                             Watermark="🔍 Filter slot # or recipe..." Height="30"
+                             VerticalContentAlignment="Center" Margin="0,0,0,6" />
+
+                    <CheckBox Grid.Row="1" Content="Show only baked donuts"
+                              IsChecked="{Binding ShowOnlyOccupied, Mode=TwoWay}"
+                              FontSize="11" Margin="2,0,0,6" />
+
+                    <!-- Slots List -->
+                    <ListBox Grid.Row="2" ItemsSource="{Binding FilteredDonuts}"
+                             SelectedItem="{Binding SelectedDonut, Mode=TwoWay}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:DonutItemViewModel">
+                                <Grid ColumnDefinitions="42, *" Margin="0,2">
+                                    <TextBlock Grid.Column="0" Text="{Binding DisplayIndex}" FontSize="11"
+                                               Foreground="Gray" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1" Text="{Binding Title}" FontWeight="Medium"
+                                               FontSize="11" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+            </Border>
+
+            <!-- Right: Donut Details Panel -->
+            <Border Grid.Column="2" Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                    BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                    BorderThickness="1" CornerRadius="8" Padding="14">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Spacing="14">
+                        <!-- Header & Actions -->
+                        <Grid ColumnDefinitions="Auto, *, Auto">
+                            <!-- Donut Preview Sprite -->
+                            <Border Grid.Column="0" Background="{DynamicResource SystemControlBackgroundAltMediumLowBrush}"
+                                    CornerRadius="8" Width="52" Height="52" Margin="0,0,12,0" VerticalAlignment="Center">
+                                <Image Source="{Binding SelectedDonut.Sprite}" Width="40" Height="40" Stretch="None" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                            </Border>
+
+                            <!-- Title & Timestamp -->
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                <TextBlock Text="{Binding SelectedDonut.Title}" FontWeight="Bold" FontSize="15" TextWrapping="Wrap" />
+                                <TextBlock Text="{Binding SelectedDonut.DateTimeString, StringFormat='Baked on: {0}'}" FontSize="11" Foreground="Gray" />
+                            </StackPanel>
+
+                            <!-- Action Buttons -->
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                <Button Content="⚡ Recalculate Stats" Click="OnRecalculateClick" Height="28" FontSize="11"
+                                        Background="#1E88E5" Foreground="White" FontWeight="SemiBold"
+                                        ToolTip.Tip="Recalculate stars, calories, and level boost from berries" />
+                                <Button Content="📋 Clone to All" Click="OnCloneCurrentClick" Height="28" FontSize="11"
+                                        ToolTip.Tip="Copy this donut to all 999 slots" />
+                                <Button Content="Clear" Click="OnClearDonutClick" Height="28" FontSize="11"
+                                        Foreground="#D32F2F" ToolTip.Tip="Empty this donut slot" />
+                            </StackPanel>
+                        </Grid>
+
+                        <Separator Height="1" Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" Margin="0,2" />
+
+                        <!-- Donut Parameters: Recipe, Stars, Calories, Level Boost -->
+                        <Grid RowDefinitions="Auto, Auto" ColumnDefinitions="*, 12, *">
+                            <!-- Recipe Base -->
+                            <StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Spacing="4" Margin="0,0,0,10">
+                                <TextBlock Text="Donut Recipe / Base Form:" FontWeight="SemiBold" FontSize="12" />
+                                <ComboBox ItemsSource="{Binding DonutRecipeOptions}"
+                                          SelectedValue="{Binding SelectedDonut.Recipe, Mode=TwoWay}"
+                                          SelectedValueBinding="{Binding ID}"
+                                          DisplayMemberBinding="{Binding Name}"
+                                          HorizontalAlignment="Stretch" Height="30" />
+                            </StackPanel>
+
+                            <!-- 3 Numeric Fields -->
+                            <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" ColumnDefinitions="*, 10, *, 10, *">
+                                <!-- Stars -->
+                                <StackPanel Grid.Column="0" Spacing="4">
+                                    <TextBlock Text="Rating (1-5 ⭐):" FontWeight="SemiBold" FontSize="12" />
+                                    <NumericUpDown Value="{Binding SelectedDonut.Stars, Mode=TwoWay}"
+                                                   Minimum="1" Maximum="5" FormatString="0" Height="30" VerticalContentAlignment="Center" />
+                                </StackPanel>
+
+                                <!-- Calories -->
+                                <StackPanel Grid.Column="2" Spacing="4">
+                                    <TextBlock Text="Calories (kcal):" FontWeight="SemiBold" FontSize="12" />
+                                    <NumericUpDown Value="{Binding SelectedDonut.Calories, Mode=TwoWay}"
+                                                   Minimum="0" Maximum="9999" FormatString="0" Height="30" VerticalContentAlignment="Center" />
+                                </StackPanel>
+
+                                <!-- Level Boost Perk (Max 255) -->
+                                <StackPanel Grid.Column="4" Spacing="4">
+                                    <TextBlock Text="Level Boost Perk:" FontWeight="SemiBold" FontSize="12" ToolTip.Tip="Perk level boost (0-255) granted by the donut" />
+                                    <NumericUpDown Value="{Binding SelectedDonut.LevelBoost, Mode=TwoWay}"
+                                                   Minimum="0" Maximum="255" FormatString="0" Height="30" VerticalContentAlignment="Center" />
+                                </StackPanel>
+                            </Grid>
+                        </Grid>
+
+                        <Separator Height="1" Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" Margin="0,2" />
+
+                        <!-- Meal Power Flavors (Perks 0, 1, 2) -->
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Meal Power Flavors (Perks 1 - 3):" FontWeight="SemiBold" FontSize="12" />
+                            <Grid ColumnDefinitions="*, 8, *, 8, *">
+                                <!-- Flavor 0 -->
+                                <Grid Grid.Column="0" ColumnDefinitions="28, *">
+                                    <Image Grid.Column="0" Source="{Binding SelectedDonut.Flavor0Icon}" Width="22" Height="22" Stretch="None" VerticalAlignment="Center" Margin="0,0,4,0" />
+                                    <ComboBox Grid.Column="1" ItemsSource="{Binding FlavorOptions}"
+                                              SelectedValue="{Binding SelectedDonut.Flavor0, Mode=TwoWay}"
+                                              SelectedValueBinding="{Binding Hash}"
+                                              DisplayMemberBinding="{Binding Name}"
+                                              HorizontalAlignment="Stretch" Height="30" />
+                                </Grid>
+
+                                <!-- Flavor 1 -->
+                                <Grid Grid.Column="2" ColumnDefinitions="28, *">
+                                    <Image Grid.Column="0" Source="{Binding SelectedDonut.Flavor1Icon}" Width="22" Height="22" Stretch="None" VerticalAlignment="Center" Margin="0,0,4,0" />
+                                    <ComboBox Grid.Column="1" ItemsSource="{Binding FlavorOptions}"
+                                              SelectedValue="{Binding SelectedDonut.Flavor1, Mode=TwoWay}"
+                                              SelectedValueBinding="{Binding Hash}"
+                                              DisplayMemberBinding="{Binding Name}"
+                                              HorizontalAlignment="Stretch" Height="30" />
+                                </Grid>
+
+                                <!-- Flavor 2 -->
+                                <Grid Grid.Column="4" ColumnDefinitions="28, *">
+                                    <Image Grid.Column="0" Source="{Binding SelectedDonut.Flavor2Icon}" Width="22" Height="22" Stretch="None" VerticalAlignment="Center" Margin="0,0,4,0" />
+                                    <ComboBox Grid.Column="1" ItemsSource="{Binding FlavorOptions}"
+                                              SelectedValue="{Binding SelectedDonut.Flavor2, Mode=TwoWay}"
+                                              SelectedValueBinding="{Binding Hash}"
+                                              DisplayMemberBinding="{Binding Name}"
+                                              HorizontalAlignment="Stretch" Height="30" />
+                                </Grid>
+                            </Grid>
+                        </StackPanel>
+
+                        <Separator Height="1" Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" Margin="0,2" />
+
+                        <!-- Berry Ingredients -->
+                        <StackPanel Spacing="8">
+                            <Grid ColumnDefinitions="*, Auto">
+                                <TextBlock Grid.Column="0" Text="Berry Ingredients (Recipe &amp; Flavor Matrix):" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" />
+                                <!-- Display/Headline Berry -->
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <TextBlock Text="Naming Berry:" FontSize="11" Foreground="Gray" VerticalAlignment="Center" />
+                                    <Image Source="{Binding SelectedDonut.BerryNameIcon}" Width="20" Height="20" Stretch="None" VerticalAlignment="Center" />
+                                    <ComboBox ItemsSource="{Binding BerryOptions}"
+                                              SelectedValue="{Binding SelectedDonut.BerryName, Mode=TwoWay}"
+                                              SelectedValueBinding="{Binding ItemID}"
+                                              DisplayMemberBinding="{Binding Name}"
+                                              Width="160" Height="28" FontSize="11" />
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- 8 Recipe Berries in 2 columns of 4 -->
+                            <Grid RowDefinitions="Auto, Auto, Auto, Auto" ColumnDefinitions="*, 12, *">
+                                <!-- Row 0: Berry 1 & Berry 2 -->
+                                <Grid Grid.Row="0" Grid.Column="0" ColumnDefinitions="24, 26, *" Margin="0,2">
+                                    <TextBlock Grid.Column="0" Text="B1:" FontSize="11" Foreground="Gray" VerticalAlignment="Center" />
+                                    <Image Grid.Column="1" Source="{Binding SelectedDonut.Berry1Icon}" Width="20" Height="20" Stretch="None" VerticalAlignment="Center" />
+                                    <ComboBox Grid.Column="2" ItemsSource="{Binding BerryOptions}"
+                                              SelectedValue="{Binding SelectedDonut.Berry1, Mode=TwoWay}"
+                                              SelectedValueBinding="{Binding ItemID}"
+                                              DisplayMemberBinding="{Binding Name}"
+                                              HorizontalAlignment="Stretch" Height="28" FontSize="11" />
+                                </Grid>
+                                <Grid Grid.Row="0" Grid.Column="2" ColumnDefinitions="24, 26, *" Margin="0,2">
+                                    <TextBlock Grid.Column="0" Text="B2:" FontSize="11" Foreground="Gray" VerticalAlignment="Center" />
+                                    <Image Grid.Column="1" Source="{Binding SelectedDonut.Berry2Icon}" Width="20" Height="20" Stretch="None" VerticalAlignment="Center" />
+                                    <ComboBox Grid.Column="2" ItemsSource="{Binding BerryOptions}"
+                                              SelectedValue="{Binding SelectedDonut.Berry2, Mode=TwoWay}"
+                                              SelectedValueBinding="{Binding ItemID}"
+                                              DisplayMemberBinding="{Binding Name}"
+                                              HorizontalAlignment="Stretch" Height="28" FontSize="11" />
+                                </Grid>
+
+                                <!-- Row 1: Berry 3 & Berry 4 -->
+                                <Grid Grid.Row="1" Grid.Column="0" ColumnDefinitions="24, 26, *" Margin="0,2">
+                                    <TextBlock Grid.Column="0" Text="B3:" FontSize="11" Foreground="Gray" VerticalAlignment="Center" />
+                                    <Image Grid.Column="1" Source="{Binding SelectedDonut.Berry3Icon}" Width="20" Height="20" Stretch="None" VerticalAlignment="Center" />
+                                    <ComboBox Grid.Column="2" ItemsSource="{Binding BerryOptions}"
+                                              SelectedValue="{Binding SelectedDonut.Berry3, Mode=TwoWay}"
+                                              SelectedValueBinding="{Binding ItemID}"
+                                              DisplayMemberBinding="{Binding Name}"
+                                              HorizontalAlignment="Stretch" Height="28" FontSize="11" />
+                                </Grid>
+                                <Grid Grid.Row="1" Grid.Column="2" ColumnDefinitions="24, 26, *" Margin="0,2">
+                                    <TextBlock Grid.Column="0" Text="B4:" FontSize="11" Foreground="Gray" VerticalAlignment="Center" />
+                                    <Image Grid.Column="1" Source="{Binding SelectedDonut.Berry4Icon}" Width="20" Height="20" Stretch="None" VerticalAlignment="Center" />
+                                    <ComboBox Grid.Column="2" ItemsSource="{Binding BerryOptions}"
+                                              SelectedValue="{Binding SelectedDonut.Berry4, Mode=TwoWay}"
+                                              SelectedValueBinding="{Binding ItemID}"
+                                              DisplayMemberBinding="{Binding Name}"
+                                              HorizontalAlignment="Stretch" Height="28" FontSize="11" />
+                                </Grid>
+
+                                <!-- Row 2: Berry 5 & Berry 6 -->
+                                <Grid Grid.Row="2" Grid.Column="0" ColumnDefinitions="24, 26, *" Margin="0,2">
+                                    <TextBlock Grid.Column="0" Text="B5:" FontSize="11" Foreground="Gray" VerticalAlignment="Center" />
+                                    <Image Grid.Column="1" Source="{Binding SelectedDonut.Berry5Icon}" Width="20" Height="20" Stretch="None" VerticalAlignment="Center" />
+                                    <ComboBox Grid.Column="2" ItemsSource="{Binding BerryOptions}"
+                                              SelectedValue="{Binding SelectedDonut.Berry5, Mode=TwoWay}"
+                                              SelectedValueBinding="{Binding ItemID}"
+                                              DisplayMemberBinding="{Binding Name}"
+                                              HorizontalAlignment="Stretch" Height="28" FontSize="11" />
+                                </Grid>
+                                <Grid Grid.Row="2" Grid.Column="2" ColumnDefinitions="24, 26, *" Margin="0,2">
+                                    <TextBlock Grid.Column="0" Text="B6:" FontSize="11" Foreground="Gray" VerticalAlignment="Center" />
+                                    <Image Grid.Column="1" Source="{Binding SelectedDonut.Berry6Icon}" Width="20" Height="20" Stretch="None" VerticalAlignment="Center" />
+                                    <ComboBox Grid.Column="2" ItemsSource="{Binding BerryOptions}"
+                                              SelectedValue="{Binding SelectedDonut.Berry6, Mode=TwoWay}"
+                                              SelectedValueBinding="{Binding ItemID}"
+                                              DisplayMemberBinding="{Binding Name}"
+                                              HorizontalAlignment="Stretch" Height="28" FontSize="11" />
+                                </Grid>
+
+                                <!-- Row 3: Berry 7 & Berry 8 -->
+                                <Grid Grid.Row="3" Grid.Column="0" ColumnDefinitions="24, 26, *" Margin="0,2">
+                                    <TextBlock Grid.Column="0" Text="B7:" FontSize="11" Foreground="Gray" VerticalAlignment="Center" />
+                                    <Image Grid.Column="1" Source="{Binding SelectedDonut.Berry7Icon}" Width="20" Height="20" Stretch="None" VerticalAlignment="Center" />
+                                    <ComboBox Grid.Column="2" ItemsSource="{Binding BerryOptions}"
+                                              SelectedValue="{Binding SelectedDonut.Berry7, Mode=TwoWay}"
+                                              SelectedValueBinding="{Binding ItemID}"
+                                              DisplayMemberBinding="{Binding Name}"
+                                              HorizontalAlignment="Stretch" Height="28" FontSize="11" />
+                                </Grid>
+                                <Grid Grid.Row="3" Grid.Column="2" ColumnDefinitions="24, 26, *" Margin="0,2">
+                                    <TextBlock Grid.Column="0" Text="B8:" FontSize="11" Foreground="Gray" VerticalAlignment="Center" />
+                                    <Image Grid.Column="1" Source="{Binding SelectedDonut.Berry8Icon}" Width="20" Height="20" Stretch="None" VerticalAlignment="Center" />
+                                    <ComboBox Grid.Column="2" ItemsSource="{Binding BerryOptions}"
+                                              SelectedValue="{Binding SelectedDonut.Berry8, Mode=TwoWay}"
+                                              SelectedValueBinding="{Binding ItemID}"
+                                              DisplayMemberBinding="{Binding Name}"
+                                              HorizontalAlignment="Stretch" Height="28" FontSize="11" />
+                                </Grid>
+                            </Grid>
+                        </StackPanel>
+
+                        <Separator Height="1" Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" Margin="0,2" />
+
+                        <!-- Flavor Profile & Status -->
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Berry Flavor Profile:" FontSize="11" Foreground="Gray" />
+                            <Border Background="{DynamicResource SystemControlBackgroundAltMediumLowBrush}"
+                                    CornerRadius="6" Padding="10,6">
+                                <TextBlock Text="{Binding SelectedDonut.FlavorProfileText}" FontSize="12" FontWeight="SemiBold" />
+                            </Border>
+                            <TextBlock Text="{Binding StatusMessage}" Foreground="#1E88E5" FontSize="12" Margin="2,2,0,0" />
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+
+        <!-- Bottom Dialog Actions -->
+        <Grid Grid.Row="2" ColumnDefinitions="*, Auto, Auto" Margin="0,14,0,0">
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                <Button Content="Cancel" Click="OnCancelClick" Width="90" Height="32" HorizontalContentAlignment="Center" />
+                <Button Content="Save Donuts" Click="OnSaveClick" Width="140" Height="32"
+                        Background="#FF6F00" Foreground="White" FontWeight="SemiBold" HorizontalContentAlignment="Center" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

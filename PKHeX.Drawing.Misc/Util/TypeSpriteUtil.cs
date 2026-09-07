@@ -9,15 +9,15 @@ namespace PKHeX.Drawing.Misc;
 /// </summary>
 public static class TypeSpriteUtil
 {
-    private static Bitmap? Get(string name) => Resources.ResourceManager.GetObject(name) as Bitmap;
+    private static RawImage? Get(string name) => Resources.ResourceManager.GetObject(name) as RawImage;
 
     /// <summary>
     /// Gets the wide type sprite image for the specified type and generation.
     /// </summary>
     /// <param name="type">The type index.</param>
     /// <param name="generation">The game generation (default: latest).</param>
-    /// <returns>A <see cref="Bitmap"/> representing the wide type sprite, or null if not available.</returns>
-    public static Bitmap? GetTypeSpriteWide(byte type, byte generation = Latest.Generation)
+    /// <returns>A <see cref="RawImage"/> representing the wide type sprite, or null if not available.</returns>
+    public static RawImage? GetTypeSpriteWide(byte type, byte generation = Latest.Generation)
     {
         if (generation <= 2)
             type = (byte)((MoveType)type).GetMoveTypeGeneration(generation);
@@ -29,8 +29,8 @@ public static class TypeSpriteUtil
     /// </summary>
     /// <param name="type">The type index.</param>
     /// <param name="generation">The game generation (default: latest).</param>
-    /// <returns>A <see cref="Bitmap"/> representing the icon type sprite, or null if not available.</returns>
-    public static Bitmap? GetTypeSpriteIcon(byte type, byte generation = Latest.Generation)
+    /// <returns>A <see cref="RawImage"/> representing the icon type sprite, or null if not available.</returns>
+    public static RawImage? GetTypeSpriteIcon(byte type, byte generation = Latest.Generation)
     {
         if (generation <= 2)
             type = (byte)((MoveType)type).GetMoveTypeGeneration(generation);
@@ -42,8 +42,8 @@ public static class TypeSpriteUtil
     /// </summary>
     /// <param name="type">The type index.</param>
     /// <param name="generation">The game generation (default: latest).</param>
-    /// <returns>A <see cref="Bitmap"/> representing the small icon type sprite, or null if not available.</returns>
-    public static Bitmap? GetTypeSpriteIconSmall(byte type, byte generation = Latest.Generation)
+    /// <returns>A <see cref="RawImage"/> representing the small icon type sprite, or null if not available.</returns>
+    public static RawImage? GetTypeSpriteIconSmall(byte type, byte generation = Latest.Generation)
     {
         if (generation <= 2)
             type = (byte)((MoveType)type).GetMoveTypeGeneration(generation);
@@ -54,8 +54,8 @@ public static class TypeSpriteUtil
     /// Gets the gem type sprite image for the specified type.
     /// </summary>
     /// <param name="type">The type index.</param>
-    /// <returns>A <see cref="Bitmap"/> representing the gem type sprite, or null if not available.</returns>
-    public static Bitmap? GetTypeSpriteGem(byte type)
+    /// <returns>A <see cref="RawImage"/> representing the gem type sprite, or null if not available.</returns>
+    public static RawImage? GetTypeSpriteGem(byte type)
     {
         return Get($"gem_{type:00}");
     }

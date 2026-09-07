@@ -1,0 +1,95 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:PKHeX.Avalonia.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="76" d:DesignHeight="64"
+             x:Class="PKHeX.Avalonia.Controls.SlotControl"
+             x:DataType="vm:SlotViewModel"
+             DragDrop.AllowDrop="True">
+
+    <Border Name="SlotBorder" Width="72" Height="60"
+            Background="#1B1B22"
+            BorderBrush="#2D2D3A"
+            BorderThickness="1" CornerRadius="8" Margin="2"
+            PointerPressed="OnSlotPointerPressed"
+            ClipToBounds="True">
+
+        <!-- Rich Dark Tooltip -->
+        <ToolTip.Tip>
+            <Border Background="#181820" BorderBrush="#363644" BorderThickness="1" CornerRadius="8" Padding="12" Width="290">
+                <StackPanel Spacing="6">
+                    <!-- Title + Legality Badge -->
+                    <Grid ColumnDefinitions="*, Auto">
+                        <TextBlock Grid.Column="0" Text="{Binding TooltipTitle}" FontWeight="Bold" FontSize="13" Foreground="White" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                        <Border Grid.Column="1" Background="{Binding LegalityBadgeBrush}" CornerRadius="4" Padding="6,2" Margin="6,0,0,0" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding LegalityText}" FontSize="10" FontWeight="Bold" Foreground="White" />
+                        </Border>
+                    </Grid>
+
+                    <!-- Subtitle (Nature, Ability, Item) -->
+                    <TextBlock Text="{Binding TooltipSubtitle}" FontSize="11" Foreground="#A1A1AA" TextWrapping="Wrap" />
+
+                    <Separator Margin="0,2" Background="#2C2C38" />
+
+                    <!-- Moves Summary -->
+                    <TextBlock Text="Moves:" FontSize="10" FontWeight="SemiBold" Foreground="#71717A" />
+                    <TextBlock Text="{Binding MovesSummary}" FontSize="11" Foreground="#D4D4D8" LineHeight="16" />
+
+                    <Separator Margin="0,2" Background="#2C2C38" />
+
+                    <!-- Stats Summary -->
+                    <TextBlock Text="{Binding StatsSummary}" FontSize="10" Foreground="#A1A1AA" />
+                </StackPanel>
+            </Border>
+        </ToolTip.Tip>
+
+        <!-- Right-Click Action Menu -->
+        <Border.ContextMenu>
+            <ContextMenu>
+                <MenuItem Header="👁️ View (Load to Editor)" Click="OnMenuViewClick" />
+                <MenuItem Header="✏️ Set (Write from Editor)" Click="OnMenuSetClick" />
+                <MenuItem Header="📋 Clone Pokémon" Click="OnMenuCloneClick" />
+                <MenuItem Header="🗑️ Delete (Clear Slot)" Click="OnMenuDeleteClick" />
+                <Separator />
+                <MenuItem Header="💾 Export .pk* File..." Click="OnMenuExportClick" />
+            </ContextMenu>
+        </Border.ContextMenu>
+
+        <Grid>
+            <!-- Pokemon Sprite (Centered) -->
+            <Image Source="{Binding Sprite}" Width="68" Height="56" Stretch="None" HorizontalAlignment="Center" VerticalAlignment="Center" />
+
+            <!-- Empty slot subtle index hint -->
+            <TextBlock Text="{Binding SlotIndex, StringFormat='{}{0}'}" 
+                       IsVisible="{Binding !HasPokemon}" 
+                       FontSize="11" Foreground="#444452" FontWeight="SemiBold"
+                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+
+            <!-- Top Left: Level Indicator (if filled) -->
+            <Border IsVisible="{Binding HasPokemon}"
+                    HorizontalAlignment="Left" VerticalAlignment="Top"
+                    Background="#242430" CornerRadius="4,0,4,0" Padding="3,1" Margin="1,1,0,0">
+                <TextBlock Text="{Binding LevelDisplay, StringFormat='{}L{0}'}" FontSize="9" FontWeight="Bold" Foreground="#D4D4D8" />
+            </Border>
+
+            <!-- Top Right: Shiny Star OR Legality Dot -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,2,3,0">
+                <!-- Shiny Star -->
+                <TextBlock Text="★" IsVisible="{Binding IsShiny}"
+                           FontSize="10" FontWeight="Bold" Foreground="#F59E0B" Margin="0,0,2,0" />
+                <!-- Legality indicator dot -->
+                <Ellipse Width="6" Height="6" Fill="{Binding LegalityBadgeBrush}"
+                         IsVisible="{Binding HasPokemon}" VerticalAlignment="Center" />
+            </StackPanel>
+
+            <!-- Bottom Right: Gender Symbol -->
+            <TextBlock Text="{Binding GenderSymbol}"
+                       IsVisible="{Binding HasPokemon}"
+                       Foreground="{Binding GenderBrush}"
+                       FontSize="10" FontWeight="Bold"
+                       HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                       Margin="0,0,4,2" />
+        </Grid>
+    </Border>
+</UserControl>

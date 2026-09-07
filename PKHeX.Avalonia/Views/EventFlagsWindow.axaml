@@ -1,0 +1,89 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:PKHeX.Avalonia.ViewModels"
+        mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="600"
+        x:Class="PKHeX.Avalonia.Views.EventFlagsWindow"
+        x:DataType="vm:EventFlagsViewModel"
+        Title="Event Flags &amp; Constants Editor"
+        Width="740" Height="620"
+        WindowStartupLocation="CenterOwner">
+
+    <Grid RowDefinitions="*, Auto" Margin="16">
+        <TabControl Grid.Row="0">
+            <!-- Tab 1: Event Flags -->
+            <TabItem Header="🚩 Event Flags">
+                <Grid RowDefinitions="Auto, Auto, *" Margin="0,10,0,0">
+                    <!-- Search Bar -->
+                    <TextBox Grid.Row="0" Text="{Binding FlagSearchText, Mode=TwoWay}"
+                             Watermark="🔍 Search flags by index or name..."
+                             Height="34" VerticalContentAlignment="Center" Margin="0,0,0,10" />
+
+                    <!-- Quick Actions -->
+                    <Border Grid.Row="1" Background="{DynamicResource SystemControlBackgroundAltMediumLowBrush}"
+                            CornerRadius="6" Padding="8" Margin="0,0,0,10">
+                        <Grid ColumnDefinitions="*, Auto">
+                            <TextBlock Grid.Column="0" Text="Batch Flag Operations (Filtered):" VerticalAlignment="Center" FontSize="12" Foreground="Gray" />
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                                <Button Content="All On" Click="OnAllFlagsOnClick" Height="28" FontSize="11" />
+                                <Button Content="All Off" Click="OnAllFlagsOffClick" Height="28" FontSize="11" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- Flags List -->
+                    <Border Grid.Row="2" Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                            BorderThickness="1" CornerRadius="8" Padding="8">
+                        <ListBox ItemsSource="{Binding FilteredFlags}" Background="Transparent">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate x:DataType="vm:EventFlagItemViewModel">
+                                    <Grid ColumnDefinitions="80, *, Auto" Margin="0,2">
+                                        <TextBlock Grid.Column="0" Text="{Binding DisplayIndex}" FontWeight="SemiBold" Foreground="Gray" VerticalAlignment="Center" />
+                                        <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="Medium" VerticalAlignment="Center" Margin="8,0" />
+                                        <CheckBox Grid.Column="2" IsChecked="{Binding IsSet, Mode=TwoWay}" VerticalAlignment="Center" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- Tab 2: Work Values / Constants -->
+            <TabItem Header="🔢 Event Constants / Work Values" IsVisible="{Binding HasWorkValues}">
+                <Grid RowDefinitions="Auto, *" Margin="0,10,0,0">
+                    <TextBox Grid.Row="0" Text="{Binding WorkSearchText, Mode=TwoWay}"
+                             Watermark="🔍 Search constants by index or name..."
+                             Height="34" VerticalContentAlignment="Center" Margin="0,0,0,10" />
+
+                    <Border Grid.Row="1" Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                            BorderThickness="1" CornerRadius="8" Padding="8">
+                        <ListBox ItemsSource="{Binding FilteredWorkValues}" Background="Transparent">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate x:DataType="vm:EventWorkItemViewModel">
+                                    <Grid ColumnDefinitions="80, *, 120" Margin="0,2">
+                                        <TextBlock Grid.Column="0" Text="{Binding DisplayIndex}" FontWeight="SemiBold" Foreground="Gray" VerticalAlignment="Center" />
+                                        <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="Medium" VerticalAlignment="Center" Margin="8,0" />
+                                        <NumericUpDown Grid.Column="2" Value="{Binding Value, Mode=TwoWay}" Minimum="0" Maximum="65535" Height="28" FormatString="0" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Border>
+                </Grid>
+            </TabItem>
+        </TabControl>
+
+        <!-- Bottom Dialog Actions -->
+        <Grid Grid.Row="1" ColumnDefinitions="*, Auto, Auto" Margin="0,14,0,0">
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                <Button Content="Cancel" Click="OnCancelClick" Width="90" Height="32" HorizontalContentAlignment="Center" />
+                <Button Content="Save Flags" Click="OnSaveClick" Width="130" Height="32"
+                        Background="#2E7D32" Foreground="White" FontWeight="SemiBold" HorizontalContentAlignment="Center" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

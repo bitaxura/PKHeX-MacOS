@@ -1,0 +1,102 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:PKHeX.Avalonia.ViewModels"
+        mc:Ignorable="d" d:DesignWidth="780" d:DesignHeight="650"
+        x:Class="PKHeX.Avalonia.Views.PokedexWindow"
+        x:DataType="vm:PokedexViewModel"
+        Title="Pokédex Editor"
+        Width="800" Height="680"
+        WindowStartupLocation="CenterOwner">
+
+    <Grid RowDefinitions="Auto, Auto, *, Auto" Margin="16">
+        <!-- Top Search and Counter Bar -->
+        <Border Grid.Row="0" Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,10">
+            <Grid ColumnDefinitions="*, Auto">
+                <TextBox Grid.Column="0" Text="{Binding FilterText, Mode=TwoWay}"
+                         Watermark="🔍 Search Pokémon by name or #dex number..."
+                         Height="34" VerticalContentAlignment="Center" Margin="0,0,14,0" />
+
+                <!-- Counters Pill -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                    <Border Background="#1E88E5" CornerRadius="12" Padding="10,4">
+                        <TextBlock Foreground="White" FontWeight="Bold" FontSize="12">
+                            <TextBlock.Text>
+                                <MultiBinding StringFormat="Seen: {0} / {1}">
+                                    <Binding Path="TotalSeen" />
+                                    <Binding Path="MaxSpecies" />
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+                    </Border>
+                    <Border Background="#2E7D32" CornerRadius="12" Padding="10,4">
+                        <TextBlock Foreground="White" FontWeight="Bold" FontSize="12">
+                            <TextBlock.Text>
+                                <MultiBinding StringFormat="Caught: {0} / {1}">
+                                    <Binding Path="TotalCaught" />
+                                    <Binding Path="MaxSpecies" />
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Bulk Action Toolbar -->
+        <Border Grid.Row="1" Background="{DynamicResource SystemControlBackgroundAltMediumLowBrush}"
+                CornerRadius="6" Padding="8" Margin="0,0,0,10">
+            <Grid ColumnDefinitions="*, Auto">
+                <TextBlock Grid.Column="0" Text="Batch Operations (Filtered):" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="12" Foreground="Gray" />
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+                    <Button Content="Seen All" Click="OnSeenAllClick" Height="28" FontSize="11" />
+                    <Button Content="Seen None" Click="OnSeenNoneClick" Height="28" FontSize="11" />
+                    <Button Content="Caught All" Click="OnCaughtAllClick" Height="28" FontSize="11" />
+                    <Button Content="Caught None" Click="OnCaughtNoneClick" Height="28" FontSize="11" />
+                    <Button Content="★ Complete Dex" Click="OnCompleteAllClick" Height="28" FontSize="11"
+                            Background="#F57F17" Foreground="White" FontWeight="Bold" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Species List -->
+        <Border Grid.Row="2" Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                BorderThickness="1" CornerRadius="8" Padding="8">
+            <ListBox ItemsSource="{Binding FilteredEntries}" Background="Transparent">
+                <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:PokedexItemViewModel">
+                        <Grid ColumnDefinitions="70, 44, *, 90, 90" Margin="0,2">
+                            <!-- Dex Number -->
+                            <TextBlock Grid.Column="0" Text="{Binding DexNumber}" FontWeight="SemiBold" Foreground="Gray" VerticalAlignment="Center" />
+
+                            <!-- Sprite -->
+                            <Image Grid.Column="1" Source="{Binding Sprite}" Width="36" Height="30" Stretch="None" VerticalAlignment="Center" />
+
+                            <!-- Name -->
+                            <TextBlock Grid.Column="2" Text="{Binding Name}" FontWeight="Bold" VerticalAlignment="Center" Margin="8,0" />
+
+                            <!-- Seen CheckBox -->
+                            <CheckBox Grid.Column="3" Content="Seen" IsChecked="{Binding IsSeen, Mode=TwoWay}" VerticalAlignment="Center" />
+
+                            <!-- Caught CheckBox -->
+                            <CheckBox Grid.Column="4" Content="Caught" IsChecked="{Binding IsCaught, Mode=TwoWay}" VerticalAlignment="Center" />
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Border>
+
+        <!-- Bottom Dialog Actions -->
+        <Grid Grid.Row="3" ColumnDefinitions="*, Auto, Auto" Margin="0,14,0,0">
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                <Button Content="Cancel" Click="OnCancelClick" Width="90" Height="32" HorizontalContentAlignment="Center" />
+                <Button Content="Save Pokédex" Click="OnSaveClick" Width="130" Height="32"
+                        Background="#2E7D32" Foreground="White" FontWeight="SemiBold" HorizontalContentAlignment="Center" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

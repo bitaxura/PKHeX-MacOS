@@ -1,0 +1,131 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="PKHeX.Avalonia.App"
+             RequestedThemeVariant="Dark">
+    <Application.Resources>
+        <!-- Modern Aesthetic Theme Brushes -->
+        <SolidColorBrush x:Key="AppBackgroundBrush" Color="#121216" />
+        <SolidColorBrush x:Key="CardBackgroundBrush" Color="#1B1B22" />
+        <SolidColorBrush x:Key="CardHoverBackgroundBrush" Color="#24242E" />
+        <SolidColorBrush x:Key="CardBorderBrush" Color="#2D2D3A" />
+        <SolidColorBrush x:Key="CardBorderHighlightBrush" Color="#3F3F52" />
+        <SolidColorBrush x:Key="ElevatedBackgroundBrush" Color="#22222C" />
+        
+        <SolidColorBrush x:Key="AccentPrimaryBrush" Color="#3B82F6" />
+        <SolidColorBrush x:Key="AccentPrimaryHoverBrush" Color="#2563EB" />
+        <SolidColorBrush x:Key="AccentSuccessBrush" Color="#10B981" />
+        <SolidColorBrush x:Key="AccentWarningBrush" Color="#F59E0B" />
+        <SolidColorBrush x:Key="AccentDangerBrush" Color="#EF4444" />
+        <SolidColorBrush x:Key="AccentPurpleBrush" Color="#8B5CF6" />
+        
+        <SolidColorBrush x:Key="TextPrimaryBrush" Color="#F4F4F5" />
+        <SolidColorBrush x:Key="TextSecondaryBrush" Color="#A1A1AA" />
+        <SolidColorBrush x:Key="TextMutedBrush" Color="#71717A" />
+        <SolidColorBrush x:Key="DividerBrush" Color="#272730" />
+    </Application.Resources>
+
+    <Application.Styles>
+        <FluentTheme />
+
+        <!-- Stat Numeric Steppers -->
+        <Style Selector="NumericUpDown.stat">
+            <Setter Property="ShowButtonSpinner" Value="False" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Height" Value="28" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FormatString" Value="0" />
+            <Setter Property="CornerRadius" Value="6" />
+        </Style>
+
+        <!-- Standard TextBoxes & Inputs -->
+        <Style Selector="TextBox">
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+
+        <Style Selector="ComboBox">
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+
+        <!-- Buttons -->
+        <Style Selector="Button">
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+        </Style>
+
+        <Style Selector="Button.primary">
+            <Setter Property="Background" Value="#2563EB" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style Selector="Button.primary:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#1D4ED8" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+
+        <Style Selector="Button.subtle">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="#2D2D3A" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="#E4E4E7" />
+        </Style>
+        <Style Selector="Button.subtle:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#24242E" />
+            <Setter Property="BorderBrush" Value="#3F3F52" />
+        </Style>
+
+        <Style Selector="Button.accent-subtle">
+            <Setter Property="Background" Value="#1E293B" />
+            <Setter Property="BorderBrush" Value="#334155" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="#60A5FA" />
+        </Style>
+        <Style Selector="Button.accent-subtle:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#2563EB" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+
+        <!-- Modern Segmented Pill TabControl -->
+        <Style Selector="TabControl">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Padding" Value="0" />
+        </Style>
+        <Style Selector="TabItem">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="Medium" />
+            <Setter Property="Padding" Value="12,6" />
+            <Setter Property="Margin" Value="2,0" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="MinHeight" Value="30" />
+            <Setter Property="Foreground" Value="#A1A1AA" />
+        </Style>
+        <Style Selector="TabItem:selected">
+            <Setter Property="Foreground" Value="#FFFFFF" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style Selector="TabItem:selected /template/ Border#PART_SelectedPipe">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+
+        <!-- ToolTip Styling -->
+        <Style Selector="ToolTip">
+            <Setter Property="Background" Value="#1C1C22" />
+            <Setter Property="BorderBrush" Value="#3F3F4E" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="10" />
+        </Style>
+
+        <!-- Card Borders -->
+        <Style Selector="Border.card">
+            <Setter Property="Background" Value="{DynamicResource CardBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+        </Style>
+    </Application.Styles>
+</Application>

@@ -1,0 +1,226 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:PKHeX.Avalonia.ViewModels"
+        xmlns:controls="using:PKHeX.Avalonia.Controls"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1180" d:DesignHeight="780"
+        x:Class="PKHeX.Avalonia.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Title="{Binding WindowTitle}"
+        Width="1200" Height="800"
+        MinWidth="960" MinHeight="640"
+        WindowStartupLocation="CenterScreen"
+        DragDrop.AllowDrop="True"
+        Background="{DynamicResource AppBackgroundBrush}">
+
+    <!-- Native macOS Application Menu (integrated into macOS system menu bar) -->
+    <NativeMenu.Menu>
+        <NativeMenu>
+            <NativeMenuItem Header="File">
+                <NativeMenu>
+                    <NativeMenuItem Header="Open Save / PKM..." Click="OnNativeMenuOpenClick" Gesture="Cmd+O" />
+                    <NativeMenuItemSeparator />
+                    <NativeMenuItem Header="Save SAV" Click="OnNativeMenuSaveClick" Gesture="Cmd+S" />
+                    <NativeMenuItem Header="Save SAV As..." Click="OnNativeMenuSaveAsClick" Gesture="Cmd+Shift+S" />
+                </NativeMenu>
+            </NativeMenuItem>
+            <NativeMenuItem Header="Tools">
+                <NativeMenu>
+                    <NativeMenuItem Header="🎒 Inventory / Bag Editor..." Click="OnNativeOpenInventoryClick" IsVisible="{Binding HasInventory}" />
+                    <NativeMenuItem Header="👤 Trainer Info Editor..." Click="OnNativeOpenTrainerClick" IsVisible="{Binding HasTrainerInfo}" />
+                    <NativeMenuItem Header="📖 Pokédex Editor..." Click="OnNativeOpenPokedexClick" IsVisible="{Binding HasPokedex}" />
+                    <NativeMenuItem Header="🚩 Event Flags &amp; Constants..." Click="OnNativeOpenEventFlagsClick" IsVisible="{Binding HasEventFlags}" />
+                    <NativeMenuItem Header="🎁 Mystery Gift / Wonder Cards..." Click="OnNativeOpenMysteryGiftClick" IsVisible="{Binding HasMysteryGift}" />
+                    <NativeMenuItem Header="🔍 Pokémon Database..." Click="OnNativeOpenDatabaseClick" IsVisible="{Binding HasSaveFile}" />
+                    <NativeMenuItem Header="⚡ Batch Editor..." Click="OnNativeOpenBatchEditorClick" IsVisible="{Binding HasSaveFile}" />
+                    <NativeMenuItem Header="⚖️ Legality Analysis Report..." Click="OnNativeOpenLegalityReportClick" />
+                    <NativeMenuItem Header="🏆 Hall of Fame Records..." Click="OnNativeOpenHallOfFameClick" IsVisible="{Binding HasHallOfFame}" />
+                    <NativeMenuItem Header="🍩 Donut Bakery Editor..." Click="OnNativeOpenDonutsClick" IsVisible="{Binding HasDonuts}" />
+                    <NativeMenuItem Header="👗 Fashion &amp; Wardrobe..." Click="OnNativeOpenFashionClick" IsVisible="{Binding HasFashion}" />
+                    <NativeMenuItem Header="📦 Block Data Inspector..." Click="OnNativeOpenBlockEditorClick" IsVisible="{Binding HasBlockInspector}" />
+                    <NativeMenuItemSeparator />
+                    <NativeMenuItem Header="Export Current Box Showdown" Click="OnNativeMenuExportShowdownClick" />
+                    <NativeMenuItemSeparator />
+                    <NativeMenuItem Header="Preferences..." Click="OnNativeOpenSettingsClick" Gesture="Cmd+," />
+                </NativeMenu>
+            </NativeMenuItem>
+            <NativeMenuItem Header="Help">
+                <NativeMenu>
+                    <NativeMenuItem Header="About PKHeX (macOS)" Click="OnNativeOpenAboutClick" />
+                </NativeMenu>
+            </NativeMenuItem>
+        </NativeMenu>
+    </NativeMenu.Menu>
+
+    <Grid RowDefinitions="Auto, *, Auto">
+        <!-- Top Application Command & Navigation Bar -->
+        <Border Grid.Row="0" Background="#17171E" BorderBrush="#272733" BorderThickness="0,0,0,1" Padding="14,8">
+            <Grid ColumnDefinitions="Auto, *, Auto" VerticalAlignment="Center">
+                <!-- Left: App Brand & Game Indicator -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                    <!-- Brand Label -->
+                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                        <Border Width="24" Height="24" CornerRadius="12" Background="{DynamicResource AccentPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <TextBlock Text="◓" FontSize="14" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-2,0,0" />
+                        </Border>
+                        <TextBlock Text="PKHeX" FontWeight="ExtraBold" FontSize="15" Foreground="White" VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <!-- Game Version Badge -->
+                    <Border Background="#2563EB" CornerRadius="12" Padding="10,3" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding GameVersionName}" FontWeight="Bold" Foreground="White" FontSize="11" />
+                    </Border>
+
+                    <!-- Save File Name Badge -->
+                    <Border Background="#22222C" BorderBrush="#32323E" BorderThickness="1" CornerRadius="12" Padding="8,3" VerticalAlignment="Center"
+                            ToolTip.Tip="{Binding SaveFilePath}">
+                        <TextBlock Text="{Binding SaveFileName}" FontSize="11" Foreground="#A1A1AA" />
+                    </Border>
+                </StackPanel>
+
+                <!-- Center: Trainer Overview Card (Click to open full Trainer Editor) -->
+                <Button Grid.Column="1" Classes="subtle" Click="OnOpenTrainerClick" IsEnabled="{Binding HasTrainerInfo}"
+                        HorizontalAlignment="Center" VerticalAlignment="Center"
+                        Padding="12,5" Height="34" CornerRadius="8"
+                        ToolTip.Tip="Click to open Trainer Info Editor">
+                    <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                        <!-- OT -->
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Text="OT:" Foreground="{DynamicResource TextMutedBrush}" FontSize="11" FontWeight="Medium" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding TrainerName}" FontWeight="Bold" FontSize="12" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
+
+                        <!-- TID -->
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Text="TID:" Foreground="{DynamicResource TextMutedBrush}" FontSize="11" FontWeight="Medium" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding TrainerID}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
+
+                        <!-- Money -->
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Text="{Binding FormattedMoney}" FontWeight="SemiBold" FontSize="11" Foreground="{DynamicResource AccentSuccessBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
+
+                        <!-- Play Time -->
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Text="⏱" FontSize="10" VerticalAlignment="Center" Foreground="{DynamicResource TextMutedBrush}" />
+                            <TextBlock Text="{Binding PlayTime}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </StackPanel>
+                </Button>
+
+                <!-- Right: Action Hub (Open, Save, Tools Dropdown, Help) -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <!-- Open Button -->
+                    <Button Content="📂 Open..." Click="OnMenuOpenClick" Classes="primary" Height="32" Padding="12,0"
+                            ToolTip.Tip="Open Pokémon Save File or PKM entity (⌘O)" />
+
+                    <!-- Save Split/Menu -->
+                    <Button Content="💾 Save" Click="OnMenuSaveClick" IsEnabled="{Binding HasSaveFile}" Classes="subtle" Height="32" Padding="10,0"
+                            ToolTip.Tip="Save current save file (⌘S)">
+                        <Button.Flyout>
+                            <MenuFlyout Placement="BottomEdgeAlignedRight">
+                                <MenuItem Header="💾 Save (Overwrite)" Click="OnMenuSaveClick" InputGesture="Cmd+S" />
+                                <MenuItem Header="Save As..." Click="OnMenuSaveAsClick" InputGesture="Cmd+Shift+S" />
+                            </MenuFlyout>
+                        </Button.Flyout>
+                    </Button>
+
+                    <!-- Consolidated Tools Dropdown Menu -->
+                    <Button Content="🛠️ Tools ▾" Classes="subtle" Height="32" Padding="10,0">
+                        <Button.Flyout>
+                            <MenuFlyout Placement="BottomEdgeAlignedRight">
+                                <!-- Group 1: Save Editors -->
+                                <MenuItem Header="🎒 Inventory / Bag Editor..." Click="OnOpenInventoryClick" IsVisible="{Binding HasInventory}" />
+                                <MenuItem Header="👤 Trainer Info Editor..." Click="OnOpenTrainerClick" IsVisible="{Binding HasTrainerInfo}" />
+                                <MenuItem Header="📖 Pokédex Editor..." Click="OnOpenPokedexClick" IsVisible="{Binding HasPokedex}" />
+                                <MenuItem Header="🚩 Event Flags &amp; Constants..." Click="OnOpenEventFlagsClick" IsVisible="{Binding HasEventFlags}" />
+                                <MenuItem Header="🎁 Mystery Gift / Wonder Cards..." Click="OnOpenMysteryGiftClick" IsVisible="{Binding HasMysteryGift}" />
+                                <MenuItem Header="🍩 Donut Bakery Editor..." Click="OnOpenDonutsClick" IsVisible="{Binding HasDonuts}" />
+                                <MenuItem Header="👗 Fashion &amp; Wardrobe..." Click="OnOpenFashionClick" IsVisible="{Binding HasFashion}" />
+                                <Separator />
+
+                                <!-- Group 2: Pokémon Utilities -->
+                                <MenuItem Header="🔍 Pokémon Database &amp; Search..." Click="OnOpenDatabaseClick" IsEnabled="{Binding HasSaveFile}" />
+                                <MenuItem Header="⚡ Batch Editor..." Click="OnOpenBatchEditorClick" IsEnabled="{Binding HasSaveFile}" />
+                                <MenuItem Header="⚖️ Legality Analysis Report..." Click="OnOpenLegalityReportClick" />
+                                <MenuItem Header="🏆 Hall of Fame Records..." Click="OnOpenHallOfFameClick" IsVisible="{Binding HasHallOfFame}" />
+                                <MenuItem Header="📋 Export Current Box Showdown" Click="OnMenuExportShowdownClick" IsEnabled="{Binding HasSaveFile}" />
+                                <Separator />
+
+                                <!-- Group 3: Advanced & Preferences -->
+                                <MenuItem Header="📦 Save Block Data Inspector..." Click="OnOpenBlockEditorClick" IsVisible="{Binding HasBlockInspector}" />
+                                <MenuItem Header="⚙️ Preferences..." Click="OnOpenSettingsClick" InputGesture="Cmd+," />
+                            </MenuFlyout>
+                        </Button.Flyout>
+                    </Button>
+
+                    <!-- About Dialog Button -->
+                    <Button Content="ℹ️" Click="OnOpenAboutClick" Classes="subtle" Width="32" Height="32" Padding="0" ToolTip.Tip="About PKHeX" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Main Workspace (Editor + Box/Party Viewer) -->
+        <Grid Grid.Row="1" ColumnDefinitions="480, 6, *" Margin="6">
+            <!-- Left Column: PKM Editor Pane -->
+            <controls:PKMEditorView Grid.Column="0" Name="EditorControl" DataContext="{Binding Editor}" Margin="2,4,4,4" />
+
+            <!-- Clean Splitter -->
+            <GridSplitter Grid.Column="1" Width="6" Background="Transparent" ResizeDirection="Columns" />
+
+            <!-- Right Column: Box & Party Viewer Pane -->
+            <Grid Grid.Column="2" RowDefinitions="Auto, *" Margin="4,4,2,4">
+                <!-- Box Navigation Toolbar -->
+                <Border Grid.Row="0" Classes="card" Margin="0,0,0,6" Padding="10,6">
+                    <Grid ColumnDefinitions="Auto, Auto, *, Auto">
+                        <!-- Navigation Buttons & Box ComboBox -->
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <Button Content="◀" Click="OnPreviousBoxClick" Classes="subtle" Width="34" Height="30" ToolTip.Tip="Previous Box" />
+                            <ComboBox ItemsSource="{Binding BoxNames}" 
+                                      SelectedIndex="{Binding CurrentBoxIndex, Mode=TwoWay}" 
+                                      Width="160" Height="30" />
+                            <Button Content="▶" Click="OnNextBoxClick" Classes="subtle" Width="34" Height="30" ToolTip.Tip="Next Box" />
+                        </StackPanel>
+
+                        <!-- Box Occupancy Pill -->
+                        <Border Grid.Column="1" Background="#20202A" CornerRadius="12" Padding="8,3" Margin="10,0,0,0" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding BoxOccupancy}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource AccentPrimaryBrush}" />
+                        </Border>
+
+                        <!-- Quick Box Action -->
+                        <Button Grid.Column="3" Content="📋 Export Showdown" Click="OnMenuExportShowdownClick"
+                                IsEnabled="{Binding HasSaveFile}" Classes="subtle" Height="30" FontSize="11" Padding="10,0"
+                                ToolTip.Tip="Copy Showdown text format for this box to clipboard" />
+                    </Grid>
+                </Border>
+
+                <!-- Box / Party Host Container -->
+                <controls:BoxViewerView Grid.Row="1" Name="BoxViewerControl" DataContext="{Binding BoxViewer}" />
+            </Grid>
+        </Grid>
+
+        <!-- Modern Status Bar -->
+        <Border Grid.Row="2" Background="#141418" BorderBrush="#252530" BorderThickness="0,1,0,0" Padding="14,5">
+            <Grid ColumnDefinitions="Auto, *, Auto">
+                <!-- Status Indicator Dot + Text -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <Ellipse Width="7" Height="7" Fill="{DynamicResource AccentSuccessBrush}" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding StatusMessage}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                </StackPanel>
+
+                <!-- File Path Hint (Middle) -->
+                <TextBlock Grid.Column="1" Text="{Binding SaveFilePath}" 
+                           FontSize="10" Foreground="{DynamicResource TextMutedBrush}" 
+                           TextTrimming="CharacterEllipsis" Margin="16,0" 
+                           HorizontalAlignment="Right" VerticalAlignment="Center"
+                           ToolTip.Tip="{Binding SaveFilePath}" />
+
+                <!-- Engine Badge (Right) -->
+                <TextBlock Grid.Column="2" Text="PKHeX Avalonia Native • .NET 10" 
+                           FontSize="10" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

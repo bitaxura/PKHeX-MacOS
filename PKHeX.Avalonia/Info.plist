@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleDevelopmentRegion</key>
+    <string>en</string>
+    <key>CFBundleDisplayName</key>
+    <string>PKHeX</string>
+    <key>CFBundleExecutable</key>
+    <string>PKHeX.Avalonia</string>
+    <key>CFBundleIconFile</key>
+    <string>PKHeX.icns</string>
+    <key>CFBundleIdentifier</key>
+    <string>com.pkhex.avalonia</string>
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    <key>CFBundleName</key>
+    <string>PKHeX</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleShortVersionString</key>
+    <string>1.0.0</string>
+    <key>CFBundleSignature</key>
+    <string>????</string>
+    <key>CFBundleVersion</key>
+    <string>1.0.0</string>
+    <key>LSMinimumSystemVersion</key>
+    <string>12.0</string>
+    <key>NSHighResolutionCapable</key>
+    <true/>
+    <key>NSSupportsAutomaticGraphicsSwitching</key>
+    <true/>
+    <key>CFBundleDocumentTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>Pokémon Save File</string>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>CFBundleTypeExtensions</key>
+            <array>
+                <string>sav</string>
+                <string>dsv</string>
+                <string>bin</string>
+                <string>dat</string>
+                <string>main</string>
+            </array>
+        </dict>
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>Pokémon Entity File</string>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>CFBundleTypeExtensions</key>
+            <array>
+                <string>pk1</string>
+                <string>pk2</string>
+                <string>pk3</string>
+                <string>pk4</string>
+                <string>pk5</string>
+                <string>pk6</string>
+                <string>pk7</string>
+                <string>pk8</string>
+                <string>pk9</string>
+                <string>pb7</string>
+                <string>pb8</string>
+                <string>pa8</string>
+            </array>
+        </dict>
+    </array>
+</dict>
+</plist>

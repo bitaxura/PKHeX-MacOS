@@ -14,15 +14,15 @@ public static class PlayerSpriteUtil
     /// </summary>
     /// <param name="sav">The save file to get the player sprite for.</param>
     /// <returns>A <see cref="Bitmap"/> representing the player sprite, or null if not available.</returns>
-    public static Bitmap? Sprite(this SaveFile sav) => GetSprite(sav);
+    public static RawImage? Sprite(this SaveFile sav) => GetSprite(sav);
 
-    private static Bitmap? GetSprite(SaveFile sav)
+    private static RawImage? GetSprite(SaveFile sav)
     {
         if (sav is IMultiplayerSprite ms)
         {
             // Gen6 only
             string file = $"tr_{ms.MultiplayerSpriteID:00}";
-            return Resources.ResourceManager.GetObject(file) as Bitmap ?? Resources.tr_00;
+            return Resources.ResourceManager.GetObject(file) as RawImage ?? Resources.tr_00;
         }
         return null;
     }

@@ -4,7 +4,7 @@ using PKHeX.Drawing.PokeSprite.Properties;
 
 namespace PKHeX.Drawing.PokeSprite;
 
-public abstract class SpriteBuilder : ISpriteBuilder<Bitmap>
+public abstract class SpriteBuilder : ISpriteBuilder<RawImage>
 {
     public static bool ShowEggSpriteAsItem { get; set; } = true;
     public static bool ShowEncounterBall { get; set; } = true;
@@ -38,16 +38,16 @@ public abstract class SpriteBuilder : ISpriteBuilder<Bitmap>
 
     public abstract bool HasFallbackMethod { get; }
 
-    public abstract Bitmap Hover { get; }
-    public abstract Bitmap View { get; }
-    public abstract Bitmap Set { get; }
-    public abstract Bitmap Delete { get; }
-    public abstract Bitmap Transparent { get; }
-    public abstract Bitmap Drag { get; }
-    public abstract Bitmap UnknownItem { get; }
-    public abstract Bitmap None { get; }
-    public abstract Bitmap ItemTM { get; }
-    public abstract Bitmap ItemTR { get; }
+    public abstract RawImage Hover { get; }
+    public abstract RawImage View { get; }
+    public abstract RawImage Set { get; }
+    public abstract RawImage Delete { get; }
+    public abstract RawImage Transparent { get; }
+    public abstract RawImage Drag { get; }
+    public abstract RawImage UnknownItem { get; }
+    public abstract RawImage None { get; }
+    public abstract RawImage ItemTM { get; }
+    public abstract RawImage ItemTR { get; }
 
     private const double UnknownFormTransparency = 0.5;
     private const double ShinyTransparency = 0.7;
@@ -58,9 +58,9 @@ public abstract class SpriteBuilder : ISpriteBuilder<Bitmap>
     protected abstract string GetSpriteAll(ushort species, byte form, byte gender, uint formarg, bool shiny, EntityContext context);
     protected abstract string GetSpriteAllSecondary(ushort species, byte form, byte gender, uint formarg, bool shiny, EntityContext context);
     protected abstract string GetItemResourceName(int item);
-    protected abstract Bitmap Unknown { get; }
-    protected abstract Bitmap GetEggSprite(ushort species);
-    public abstract Bitmap ShadowLugia { get; }
+    protected abstract RawImage Unknown { get; }
+    protected abstract RawImage GetEggSprite(ushort species);
+    public abstract RawImage ShadowLugia { get; }
 
     /// <summary>
     /// Ensures all data is set up to generate sprites for the save file.
@@ -105,7 +105,7 @@ public abstract class SpriteBuilder : ISpriteBuilder<Bitmap>
     /// <param name="isEgg">Is currently in an egg</param>
     /// <param name="shiny">Is it shiny</param>
     /// <param name="context">Context the sprite is for</param>
-    public Bitmap GetSprite(ushort species, byte form, byte gender, uint formarg, int heldItem, bool isEgg, Shiny shiny = Shiny.Never, EntityContext context = EntityContext.None)
+    public RawImage GetSprite(ushort species, byte form, byte gender, uint formarg, int heldItem, bool isEgg, Shiny shiny = Shiny.Never, EntityContext context = EntityContext.None)
     {
         if (species == 0)
             return None;
@@ -119,7 +119,7 @@ public abstract class SpriteBuilder : ISpriteBuilder<Bitmap>
         return GetSprite(baseImage, species, heldItem, isEgg, shiny, context);
     }
 
-    public Bitmap GetSprite(Bitmap baseSprite, ushort species, int heldItem, bool isEgg, Shiny shiny, EntityContext context = EntityContext.None)
+    public RawImage GetSprite(RawImage baseSprite, ushort species, int heldItem, bool isEgg, Shiny shiny, EntityContext context = EntityContext.None)
     {
         if (isEgg)
             baseSprite = LayerOverImageEgg(baseSprite, species, heldItem != 0);
@@ -134,7 +134,7 @@ public abstract class SpriteBuilder : ISpriteBuilder<Bitmap>
         return baseSprite;
     }
 
-    private Bitmap GetBaseImage(ushort species, byte form, byte gender, uint formarg, bool shiny, EntityContext context)
+    private RawImage GetBaseImage(ushort species, byte form, byte gender, uint formarg, bool shiny, EntityContext context)
     {
         var img = FormInfo.IsTotemForm(species, form, context)
             ? GetBaseImageTotem(species, form, gender, formarg, shiny, context)
@@ -142,7 +142,7 @@ public abstract class SpriteBuilder : ISpriteBuilder<Bitmap>
         return img ?? GetBaseImageFallback(species, form, gender, formarg, shiny, context);
     }
 
-    private Bitmap? GetBaseImageTotem(ushort species, byte form, byte gender, uint formarg, bool shiny, EntityContext context)
+    private RawImage? GetBaseImageTotem(ushort species, byte form, byte gender, uint formarg, bool shiny, EntityContext context)
     {
         var baseform = FormInfo.GetTotemBaseForm(species, form);
         var b = GetBaseImageDefault(species, baseform, gender, formarg, shiny, context);
@@ -150,23 +150,23 @@ public abstract class SpriteBuilder : ISpriteBuilder<Bitmap>
             return null;
 
         SpriteUtil.GetSpriteGlow(b, 0, 165, 255, out var pixels, true);
-        var layer = ImageUtil.GetBitmap(pixels, b.Width, b.Height, b.PixelFormat);
+        var layer = new RawImage(b.Width, b.Height, pixels);
         return ImageUtil.LayerImage(b, layer, 0, 0);
     }
 
-    private Bitmap? GetBaseImageDefault(ushort species, byte form, byte gender, uint formarg, bool shiny, EntityContext context)
+    private RawImage? GetBaseImageDefault(ushort species, byte form, byte gender, uint formarg, bool shiny, EntityContext context)
     {
         var file = GetSpriteAll(species, form, gender, formarg, shiny, context);
-        var resource = (Bitmap?)Resources.ResourceManager.GetObject(file);
+        var resource = (RawImage?)Resources.ResourceManager.GetObject(file);
         if (resource is null && HasFallbackMethod)
         {
             file = GetSpriteAllSecondary(species, form, gender, formarg, shiny, context);
-            resource = (Bitmap?)Resources.ResourceManager.GetObject(file);
+            resource = (RawImage?)Resources.ResourceManager.GetObject(file);
         }
         return resource;
     }
 
-    private Bitmap GetBaseImageFallback(ushort species, byte form, byte gender, uint formarg, bool shiny, EntityContext context)
+    private RawImage GetBaseImageFallback(ushort species, byte form, byte gender, uint formarg, bool shiny, EntityContext context)
     {
         if (shiny) // try again without shiny
         {
@@ -176,13 +176,13 @@ public abstract class SpriteBuilder : ISpriteBuilder<Bitmap>
         }
 
         // try again without form
-        var baseImage = (Bitmap?)Resources.ResourceManager.GetObject(GetSpriteStringSpeciesOnly(species));
+        var baseImage = (RawImage?)Resources.ResourceManager.GetObject(GetSpriteStringSpeciesOnly(species));
         if (baseImage is null) // failed again
             return Unknown;
         return ImageUtil.LayerImage(baseImage, Unknown, 0, 0, UnknownFormTransparency);
     }
 
-    private Bitmap LayerOverImageItem(Bitmap baseImage, int item, EntityContext context)
+    private RawImage LayerOverImageItem(RawImage baseImage, int item, EntityContext context)
     {
         var itemimg = GetItemSprite(item, context);
 
@@ -192,21 +192,21 @@ public abstract class SpriteBuilder : ISpriteBuilder<Bitmap>
         return ImageUtil.LayerImage(baseImage, itemimg, x, y);
     }
 
-    public Bitmap GetItemSprite(int item, EntityContext context)
+    public RawImage GetItemSprite(int item, EntityContext context)
     {
         var lump = HeldItemLumpUtil.GetIsLump(item, context);
         return lump switch
         {
             HeldItemLumpImage.TechnicalMachine => ItemTM,
             HeldItemLumpImage.TechnicalRecord => ItemTR,
-            _ => (Bitmap?)Resources.ResourceManager.GetObject(GetItemResourceName(item)) ?? UnknownItem,
+            _ => (RawImage?)Resources.ResourceManager.GetObject(GetItemResourceName(item)) ?? UnknownItem,
         };
     }
 
-    private static Bitmap LayerOverImageShiny(Bitmap baseImage, Shiny shiny)
+    private static RawImage LayerOverImageShiny(RawImage baseImage, Shiny shiny)
     {
         // Add shiny star to top left of image.
-        Bitmap rare;
+        RawImage rare;
         if (shiny is Shiny.AlwaysSquare)
             rare = Resources.rare_icon_alt_2;
         else
@@ -214,14 +214,14 @@ public abstract class SpriteBuilder : ISpriteBuilder<Bitmap>
         return ImageUtil.LayerImage(baseImage, rare, 0, 0, ShinyTransparency);
     }
 
-    private Bitmap LayerOverImageEgg(Bitmap baseImage, ushort species, bool hasItem)
+    private RawImage LayerOverImageEgg(RawImage baseImage, ushort species, bool hasItem)
     {
         if (ShowEggSpriteAsItem && !hasItem)
             return LayerOverImageEggAsItem(baseImage, species);
         return LayerOverImageEggTransparentSpecies(baseImage, species);
     }
 
-    private Bitmap LayerOverImageEggTransparentSpecies(Bitmap baseImage, ushort species)
+    private RawImage LayerOverImageEggTransparentSpecies(RawImage baseImage, ushort species)
     {
         // Partially transparent species.
         baseImage.ChangeOpacity(EggUnderLayerTransparency);
@@ -230,7 +230,7 @@ public abstract class SpriteBuilder : ISpriteBuilder<Bitmap>
         return ImageUtil.LayerImage(baseImage, egg, 0, 0);
     }
 
-    private Bitmap LayerOverImageEggAsItem(Bitmap baseImage, ushort species)
+    private RawImage LayerOverImageEggAsItem(RawImage baseImage, ushort species)
     {
         var egg = GetEggSprite(species);
         return ImageUtil.LayerImage(baseImage, egg, EggItemShiftX, EggItemShiftY); // similar to held item, since they can't have any

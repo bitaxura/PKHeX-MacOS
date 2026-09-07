@@ -1,13 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net10.0-windows</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <RootNamespace>PKHeX.Drawing.PokeSprite</RootNamespace>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="System.Resources.Extensions" Version="10.0.1" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\PKHeX.Core\PKHeX.Core.csproj" />
@@ -15,18 +11,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Properties\Resources.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Update="Properties\Resources.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
+    <None Remove="Resources\**" />
+    <EmbeddedResource Include="Resources\img\**\*.png" LogicalName="%(Filename)%(Extension)" />
   </ItemGroup>
 
 </Project>

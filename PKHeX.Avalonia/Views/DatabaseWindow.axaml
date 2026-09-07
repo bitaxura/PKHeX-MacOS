@@ -1,0 +1,103 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:PKHeX.Avalonia.ViewModels"
+        mc:Ignorable="d" d:DesignWidth="880" d:DesignHeight="600"
+        x:Class="PKHeX.Avalonia.Views.DatabaseWindow"
+        x:DataType="vm:DatabaseViewModel"
+        Title="Pokémon Database &amp; Search"
+        Width="900" Height="620"
+        WindowStartupLocation="CenterOwner">
+
+    <Grid RowDefinitions="Auto, *, Auto" Margin="16">
+        <!-- Search & Filter Header -->
+        <Border Grid.Row="0" Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,12">
+            <Grid ColumnDefinitions="*, 140, 140, Auto" VerticalAlignment="Center">
+                <TextBox Grid.Column="0" Text="{Binding SearchText, Mode=TwoWay}"
+                         Watermark="🔍 Search species, nickname, ability, nature, box..."
+                         Height="34" VerticalContentAlignment="Center" Margin="0,0,10,0" />
+
+                <!-- Shiny Filter -->
+                <ComboBox Grid.Column="1" SelectedIndex="{Binding ShinyFilter, Mode=TwoWay}" Height="34" HorizontalAlignment="Stretch" Margin="0,0,10,0">
+                    <ComboBoxItem Content="All Shinies" />
+                    <ComboBoxItem Content="★ Shiny Only" />
+                    <ComboBoxItem Content="Non-Shiny" />
+                </ComboBox>
+
+                <!-- Legality Filter -->
+                <ComboBox Grid.Column="2" SelectedIndex="{Binding LegalityFilter, Mode=TwoWay}" Height="34" HorizontalAlignment="Stretch" Margin="0,0,14,0">
+                    <ComboBoxItem Content="All Legality" />
+                    <ComboBoxItem Content="✓ Legal Only" />
+                    <ComboBoxItem Content="✕ Illegal Only" />
+                </ComboBox>
+
+                <!-- Count Badge -->
+                <Border Grid.Column="3" Background="#1E88E5" CornerRadius="12" Padding="12,6" VerticalAlignment="Center">
+                    <TextBlock Foreground="White" FontWeight="Bold" FontSize="12">
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat="{}{0} / {1} PKM">
+                                <Binding Path="FilteredCount" />
+                                <Binding Path="TotalCount" />
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- Results Grid -->
+        <Border Grid.Row="1" Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                BorderThickness="1" CornerRadius="8" Padding="8">
+            <ListBox ItemsSource="{Binding FilteredEntries}"
+                     SelectedItem="{Binding SelectedEntry, Mode=TwoWay}"
+                     Background="Transparent">
+                <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:DatabaseEntryViewModel">
+                        <Grid ColumnDefinitions="40, 110, 150, 60, 100, 120, *, 80" Margin="0,2">
+                            <!-- Sprite -->
+                            <Image Grid.Column="0" Source="{Binding Sprite}" Width="36" Height="30" Stretch="None" VerticalAlignment="Center" />
+
+                            <!-- Location -->
+                            <TextBlock Grid.Column="1" Text="{Binding Location}" Foreground="Gray" FontSize="11" FontWeight="Medium" VerticalAlignment="Center" Margin="4,0" />
+
+                            <!-- Name / Species -->
+                            <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="4,0">
+                                <TextBlock Text="{Binding Nickname}" FontWeight="Bold" FontSize="13" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Text="{Binding SpeciesName}" FontSize="11" Foreground="Gray" TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+
+                            <!-- Level -->
+                            <TextBlock Grid.Column="3" Text="{Binding Level, StringFormat='Lv. {0}'}" FontWeight="SemiBold" VerticalAlignment="Center" Margin="4,0" />
+
+                            <!-- Nature -->
+                            <TextBlock Grid.Column="4" Text="{Binding Nature}" FontSize="12" VerticalAlignment="Center" Margin="4,0" />
+
+                            <!-- Ability -->
+                            <TextBlock Grid.Column="5" Text="{Binding Ability}" FontSize="12" Foreground="Gray" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Margin="4,0" />
+
+                            <!-- Held Item -->
+                            <TextBlock Grid.Column="6" Text="{Binding HeldItem}" FontSize="12" Foreground="Gray" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Margin="4,0" />
+
+                            <!-- Legality Badge -->
+                            <TextBlock Grid.Column="7" Text="{Binding LegalityBadge}" Foreground="{Binding LegalityColor}" FontWeight="Bold" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4,0" />
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Border>
+
+        <!-- Bottom Action Bar -->
+        <Grid Grid.Row="2" ColumnDefinitions="*, Auto, Auto" Margin="0,14,0,0">
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                <Button Content="Close" Click="OnCloseClick" Width="90" Height="32" HorizontalContentAlignment="Center" />
+                <Button Content="Load Selected into Editor" Click="OnLoadToEditorClick" Height="32"
+                        IsEnabled="{Binding SelectedEntry, Converter={x:Static ObjectConverters.IsNotNull}}"
+                        Background="#1E88E5" Foreground="White" FontWeight="SemiBold" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

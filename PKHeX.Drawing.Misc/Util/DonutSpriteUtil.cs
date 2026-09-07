@@ -15,12 +15,12 @@ public static class DonutSpriteUtil
     /// </summary>
     /// <param name="donut">The donut to get the sprite for.</param>
     /// <returns>A <see cref="Bitmap"/> representing the sprite image.</returns>
-    public static Bitmap? Sprite(this Donut9a donut) => GetDonutImage(donut);
-    public static Bitmap? StarSprite => (Bitmap?)Resources.ResourceManager.GetObject("star");
-    public static Bitmap? GetDonutFlavorImage(string donut) => (Bitmap?)Resources.ResourceManager.GetObject(donut);
-    public static Bitmap? GetFlavorProfileImage() => (Bitmap?)Resources.ResourceManager.GetObject("flavorprofile");
+    public static RawImage? Sprite(this Donut9a donut) => GetDonutImage(donut);
+    public static RawImage? StarSprite => (RawImage?)Resources.ResourceManager.GetObject("star");
+    public static RawImage? GetDonutFlavorImage(string donut) => (RawImage?)Resources.ResourceManager.GetObject(donut);
+    public static RawImage? GetFlavorProfileImage() => (RawImage?)Resources.ResourceManager.GetObject("flavorprofile");
 
-    private static Bitmap? GetDonutImage(Donut9a donut)
+    private static RawImage? GetDonutImage(Donut9a donut)
     {
         if (donut.Donut is >= 198 and <= 202)
             return GetSpecialDonutImage(donut);
@@ -30,10 +30,10 @@ public static class DonutSpriteUtil
         var stars = donut.Stars;
         var flavor = flavors[variant];
         var resource = $"donut_{flavor}{stars:00}";
-        return (Bitmap?)Resources.ResourceManager.GetObject(resource);
+        return (RawImage?)Resources.ResourceManager.GetObject(resource);
     }
 
-    private static Bitmap? GetSpecialDonutImage(Donut9a donut) => donut.Donut switch
+    private static RawImage? GetSpecialDonutImage(Donut9a donut) => donut.Donut switch
     {
         198 => Resources.donut_uni491, // Bad Dreams Cruller
         199 => Resources.donut_uni383, // Omega Old-Fashioned Donut

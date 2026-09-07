@@ -1,0 +1,479 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:PKHeX.Avalonia.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="470" d:DesignHeight="680"
+             x:Class="PKHeX.Avalonia.Controls.PKMEditorView"
+             x:DataType="vm:PKMEditorViewModel">
+
+    <Grid RowDefinitions="Auto, *" Margin="2">
+        <!-- Hero Pokémon Header Card -->
+        <Border Grid.Row="0" Classes="card" Padding="12" Margin="0,0,0,8">
+            <Grid ColumnDefinitions="Auto, *">
+                <!-- Left: Sprite Box & Quick Toggles -->
+                <StackPanel Grid.Column="0" Spacing="6" VerticalAlignment="Center" Margin="0,0,12,0">
+                    <Border Width="76" Height="66" Background="#14141A"
+                            BorderBrush="#2C2C38" BorderThickness="1"
+                            CornerRadius="8" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Image Source="{Binding SpriteBitmap}" Width="68" Height="56" Stretch="None" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Center">
+                        <Button Content="★" Click="OnShinyToggleClick" ToolTip.Tip="Toggle Shiny" 
+                                Width="36" Height="28" FontSize="13" Padding="0" Classes="subtle"
+                                Foreground="{DynamicResource AccentWarningBrush}" />
+                        <Button Content="{Binding GenderDisplay}" Click="OnGenderToggleClick" ToolTip.Tip="Toggle Gender" 
+                                Width="36" Height="28" FontSize="12" Padding="0" Classes="subtle" />
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Right: Identity & Real-time Legality -->
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="6">
+                    <!-- Species -->
+                    <ComboBox ItemsSource="{Binding SpeciesList}" 
+                              SelectedValue="{Binding Species, Mode=TwoWay}"
+                              SelectedValueBinding="{Binding Value}"
+                              DisplayMemberBinding="{Binding Text}"
+                              HorizontalAlignment="Stretch" Height="32" />
+
+                    <!-- Nickname & Nicknamed toggle -->
+                    <Grid ColumnDefinitions="*, Auto">
+                        <TextBox Grid.Column="0" Text="{Binding Nickname, Mode=TwoWay}" Watermark="Nickname" Height="30" FontSize="13" FontWeight="SemiBold" VerticalContentAlignment="Center" />
+                        <CheckBox Grid.Column="1" Content="Nicknamed" IsChecked="{Binding IsNicknamed, Mode=TwoWay}" Margin="8,0,0,0" VerticalAlignment="Center" FontSize="11" />
+                    </Grid>
+
+                    <!-- Legality Badge & Export PKM Action -->
+                    <Grid ColumnDefinitions="*, Auto" Margin="0,2,0,0">
+                        <!-- Clickable Legality Chip -->
+                        <Button Grid.Column="0" Click="OnLegalityBadgeClick" 
+                                Background="{Binding LegalityBadgeBrush}"
+                                Foreground="White" Height="26" CornerRadius="13" Padding="10,0"
+                                HorizontalAlignment="Left" VerticalContentAlignment="Center"
+                                ToolTip.Tip="Click to open Legality Analysis Report">
+                            <TextBlock Text="{Binding LegalityText}" FontSize="11" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" />
+                        </Button>
+
+                        <!-- Quick Export Entity File -->
+                        <Button Grid.Column="1" Content="💾 Export .pk*" Click="OnExportPKMClick"
+                                Classes="subtle" Height="26" FontSize="11" Padding="8,2"
+                                ToolTip.Tip="Export raw entity file to disk" />
+                    </Grid>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Segmented Tab Navigation -->
+        <TabControl Grid.Row="1" Margin="0">
+            <!-- TAB 1: MAIN -->
+            <TabItem Header="Main">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,6,0,0">
+                    <StackPanel Spacing="10" Margin="2,4,4,4">
+                        <!-- Level & EXP -->
+                        <Border Classes="card" Padding="10">
+                            <Grid ColumnDefinitions="130, *">
+                                <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,6,0">
+                                    <TextBlock Text="Level (1-100)" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" FontWeight="Medium" />
+                                    <NumericUpDown Value="{Binding Level, Mode=TwoWay}" Minimum="1" Maximum="100" Height="30" FormatString="0" VerticalContentAlignment="Center" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Spacing="4" Margin="6,0,0,0">
+                                    <TextBlock Text="Experience Points (EXP)" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" FontWeight="Medium" />
+                                    <NumericUpDown Value="{Binding EXP, Mode=TwoWay}" Minimum="0" Maximum="1640000" Height="30" FormatString="0" VerticalContentAlignment="Center" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Nature & Stat Nature -->
+                        <Border Classes="card" Padding="10">
+                            <Grid ColumnDefinitions="*, *">
+                                <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,6,0">
+                                    <TextBlock Text="Base Nature" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" FontWeight="Medium" />
+                                    <ComboBox ItemsSource="{Binding NatureList}" 
+                                              SelectedValue="{Binding Nature, Mode=TwoWay}"
+                                              SelectedValueBinding="{Binding Value}"
+                                              DisplayMemberBinding="{Binding Text}"
+                                              HorizontalAlignment="Stretch" Height="30" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Spacing="4" Margin="6,0,0,0">
+                                    <TextBlock Text="Mint Nature (Stat)" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" FontWeight="Medium" />
+                                    <ComboBox ItemsSource="{Binding NatureList}" 
+                                              SelectedValue="{Binding StatNature, Mode=TwoWay}"
+                                              SelectedValueBinding="{Binding Value}"
+                                              DisplayMemberBinding="{Binding Text}"
+                                              HorizontalAlignment="Stretch" Height="30" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Ability & Held Item -->
+                        <Border Classes="card" Padding="10">
+                            <StackPanel Spacing="8">
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="Ability" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" FontWeight="Medium" />
+                                    <ComboBox ItemsSource="{Binding AbilityList}" 
+                                              SelectedValue="{Binding Ability, Mode=TwoWay}"
+                                              SelectedValueBinding="{Binding Value}"
+                                              DisplayMemberBinding="{Binding Text}"
+                                              HorizontalAlignment="Stretch" Height="30" />
+                                </StackPanel>
+
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="Held Item" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" FontWeight="Medium" />
+                                    <ComboBox ItemsSource="{Binding ItemList}" 
+                                              SelectedValue="{Binding HeldItem, Mode=TwoWay}"
+                                              SelectedValueBinding="{Binding Value}"
+                                              DisplayMemberBinding="{Binding Text}"
+                                              HorizontalAlignment="Stretch" Height="30" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Form & Egg -->
+                        <Border Classes="card" Padding="10">
+                            <Grid ColumnDefinitions="*, Auto">
+                                <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,10,0">
+                                    <TextBlock Text="Form / Variant" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" FontWeight="Medium" />
+                                    <ComboBox ItemsSource="{Binding FormList}" 
+                                              SelectedValue="{Binding Form, Mode=TwoWay}"
+                                              SelectedValueBinding="{Binding Value}"
+                                              DisplayMemberBinding="{Binding Text}"
+                                              HorizontalAlignment="Stretch" Height="30" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Bottom" Margin="0,0,4,4">
+                                    <CheckBox Content="Is Egg" IsChecked="{Binding IsEgg, Mode=TwoWay}" FontSize="12" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- TAB 2: MET -->
+            <TabItem Header="Met">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,6,0,0">
+                    <StackPanel Spacing="10" Margin="2,4,4,4">
+                        <Border Classes="card" Padding="10">
+                            <StackPanel Spacing="10">
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="Origin Game Version" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" FontWeight="Medium" />
+                                    <ComboBox ItemsSource="{Binding GameVersionList}" 
+                                              SelectedValue="{Binding OriginVersion, Mode=TwoWay}"
+                                              SelectedValueBinding="{Binding Value}"
+                                              DisplayMemberBinding="{Binding Text}"
+                                              HorizontalAlignment="Stretch" Height="30" />
+                                </StackPanel>
+
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="Captured Poké Ball" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" FontWeight="Medium" />
+                                    <ComboBox ItemsSource="{Binding BallList}" 
+                                              SelectedValue="{Binding Ball, Mode=TwoWay}"
+                                              SelectedValueBinding="{Binding Value}"
+                                              DisplayMemberBinding="{Binding Text}"
+                                              HorizontalAlignment="Stretch" Height="30" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Classes="card" Padding="10">
+                            <StackPanel Spacing="10">
+                                <Grid ColumnDefinitions="130, *">
+                                    <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,6,0">
+                                        <TextBlock Text="Met Level" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" FontWeight="Medium" />
+                                        <NumericUpDown Value="{Binding MetLevel, Mode=TwoWay}" Minimum="1" Maximum="100" Height="30" FormatString="0" VerticalContentAlignment="Center" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Spacing="4" Margin="6,0,0,0">
+                                        <TextBlock Text="Met Location (ID)" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" FontWeight="Medium" />
+                                        <NumericUpDown Value="{Binding MetLocation, Mode=TwoWay}" Minimum="0" Maximum="65535" Height="30" FormatString="0" VerticalContentAlignment="Center" />
+                                    </StackPanel>
+                                </Grid>
+
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="Met Date" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" FontWeight="Medium" />
+                                    <CalendarDatePicker SelectedDate="{Binding MetDate, Mode=TwoWay}" HorizontalAlignment="Stretch" Height="30" />
+                                </StackPanel>
+
+                                <CheckBox Content="Fateful Encounter" IsChecked="{Binding FatefulEncounter, Mode=TwoWay}" FontSize="12" Margin="0,2,0,0" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- TAB 3: STATS -->
+            <TabItem Header="Stats">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,6,0,0">
+                    <StackPanel Spacing="10" Margin="2,4,4,4">
+                        <!-- Stats Table -->
+                        <Border Classes="card" Padding="10">
+                            <StackPanel Spacing="4">
+                                <!-- Stat Header -->
+                                <Grid ColumnDefinitions="64, 104, 104, *" Margin="0,0,0,6">
+                                    <TextBlock Grid.Column="0" Text="Stat" FontWeight="Bold" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1" Text="IV (0-31)" FontWeight="Bold" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="2" Text="EV (0-252)" FontWeight="Bold" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="3" Text="Total" FontWeight="Bold" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Grid>
+
+                                <!-- HP -->
+                                <Grid ColumnDefinitions="64, 104, 104, *" Margin="0,1">
+                                    <TextBlock Grid.Column="0" Text="HP" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" />
+                                    <NumericUpDown Grid.Column="1" Classes="stat" Value="{Binding IV_HP, Mode=TwoWay}" Minimum="0" Maximum="31" Margin="3,0" />
+                                    <NumericUpDown Grid.Column="2" Classes="stat" Value="{Binding EV_HP, Mode=TwoWay}" Minimum="0" Maximum="252" Margin="3,0" />
+                                    <Border Grid.Column="3" Background="#181820" CornerRadius="4" Padding="6,2" HorizontalAlignment="Center" MinWidth="48">
+                                        <TextBlock Text="{Binding Stat_HP}" FontWeight="Bold" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
+                                </Grid>
+
+                                <!-- Attack -->
+                                <Grid ColumnDefinitions="64, 104, 104, *" Margin="0,1">
+                                    <TextBlock Grid.Column="0" Text="Attack" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" />
+                                    <NumericUpDown Grid.Column="1" Classes="stat" Value="{Binding IV_ATK, Mode=TwoWay}" Minimum="0" Maximum="31" Margin="3,0" />
+                                    <NumericUpDown Grid.Column="2" Classes="stat" Value="{Binding EV_ATK, Mode=TwoWay}" Minimum="0" Maximum="252" Margin="3,0" />
+                                    <Border Grid.Column="3" Background="#181820" CornerRadius="4" Padding="6,2" HorizontalAlignment="Center" MinWidth="48">
+                                        <TextBlock Text="{Binding Stat_ATK}" FontWeight="Bold" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
+                                </Grid>
+
+                                <!-- Defense -->
+                                <Grid ColumnDefinitions="64, 104, 104, *" Margin="0,1">
+                                    <TextBlock Grid.Column="0" Text="Defense" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" />
+                                    <NumericUpDown Grid.Column="1" Classes="stat" Value="{Binding IV_DEF, Mode=TwoWay}" Minimum="0" Maximum="31" Margin="3,0" />
+                                    <NumericUpDown Grid.Column="2" Classes="stat" Value="{Binding EV_DEF, Mode=TwoWay}" Minimum="0" Maximum="252" Margin="3,0" />
+                                    <Border Grid.Column="3" Background="#181820" CornerRadius="4" Padding="6,2" HorizontalAlignment="Center" MinWidth="48">
+                                        <TextBlock Text="{Binding Stat_DEF}" FontWeight="Bold" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
+                                </Grid>
+
+                                <!-- Speed -->
+                                <Grid ColumnDefinitions="64, 104, 104, *" Margin="0,1">
+                                    <TextBlock Grid.Column="0" Text="Speed" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" />
+                                    <NumericUpDown Grid.Column="1" Classes="stat" Value="{Binding IV_SPE, Mode=TwoWay}" Minimum="0" Maximum="31" Margin="3,0" />
+                                    <NumericUpDown Grid.Column="2" Classes="stat" Value="{Binding EV_SPE, Mode=TwoWay}" Minimum="0" Maximum="252" Margin="3,0" />
+                                    <Border Grid.Column="3" Background="#181820" CornerRadius="4" Padding="6,2" HorizontalAlignment="Center" MinWidth="48">
+                                        <TextBlock Text="{Binding Stat_SPE}" FontWeight="Bold" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
+                                </Grid>
+
+                                <!-- Sp. Atk -->
+                                <Grid ColumnDefinitions="64, 104, 104, *" Margin="0,1">
+                                    <TextBlock Grid.Column="0" Text="Sp. Atk" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" />
+                                    <NumericUpDown Grid.Column="1" Classes="stat" Value="{Binding IV_SPA, Mode=TwoWay}" Minimum="0" Maximum="31" Margin="3,0" />
+                                    <NumericUpDown Grid.Column="2" Classes="stat" Value="{Binding EV_SPA, Mode=TwoWay}" Minimum="0" Maximum="252" Margin="3,0" />
+                                    <Border Grid.Column="3" Background="#181820" CornerRadius="4" Padding="6,2" HorizontalAlignment="Center" MinWidth="48">
+                                        <TextBlock Text="{Binding Stat_SPA}" FontWeight="Bold" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
+                                </Grid>
+
+                                <!-- Sp. Def -->
+                                <Grid ColumnDefinitions="64, 104, 104, *" Margin="0,1">
+                                    <TextBlock Grid.Column="0" Text="Sp. Def" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" />
+                                    <NumericUpDown Grid.Column="1" Classes="stat" Value="{Binding IV_SPD, Mode=TwoWay}" Minimum="0" Maximum="31" Margin="3,0" />
+                                    <NumericUpDown Grid.Column="2" Classes="stat" Value="{Binding EV_SPD, Mode=TwoWay}" Minimum="0" Maximum="252" Margin="3,0" />
+                                    <Border Grid.Column="3" Background="#181820" CornerRadius="4" Padding="6,2" HorizontalAlignment="Center" MinWidth="48">
+                                        <TextBlock Text="{Binding Stat_SPD}" FontWeight="Bold" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
+                                </Grid>
+
+                                <!-- EV Total Allocation -->
+                                <Border Background="#14141A" CornerRadius="6" Padding="10,6" Margin="0,6,0,0">
+                                    <Grid ColumnDefinitions="*, Auto">
+                                        <TextBlock Grid.Column="0" Text="Effort Value Allocation (Max 510)" FontWeight="Medium" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                                        <TextBlock Grid.Column="1" Text="{Binding EV_Total, StringFormat='{}{0} / 510'}" FontWeight="Bold" FontSize="12" Foreground="{DynamicResource AccentPrimaryBrush}" VerticalAlignment="Center" />
+                                    </Grid>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Dynamax & Tera Card -->
+                        <Border Classes="card" Padding="10">
+                            <StackPanel Spacing="8">
+                                <Grid ColumnDefinitions="*, Auto">
+                                    <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,10,0">
+                                        <TextBlock Text="Dynamax Level (0-10)" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" FontWeight="Medium" />
+                                        <NumericUpDown Value="{Binding DynamaxLevel, Mode=TwoWay}" Minimum="0" Maximum="10" Height="30" FormatString="0" VerticalContentAlignment="Center" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Bottom" Margin="0,0,4,4">
+                                        <CheckBox Content="Gigantamax" IsChecked="{Binding CanGigantamax, Mode=TwoWay}" FontSize="12" />
+                                    </StackPanel>
+                                </Grid>
+
+                                <Grid ColumnDefinitions="*, *">
+                                    <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,6,0">
+                                        <TextBlock Text="Tera Type (Original)" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" FontWeight="Medium" />
+                                        <ComboBox ItemsSource="{Binding TeraTypeList}" 
+                                                  SelectedValue="{Binding TeraTypeOriginal, Mode=TwoWay}"
+                                                  SelectedValueBinding="{Binding Value}"
+                                                  DisplayMemberBinding="{Binding Text}"
+                                                  HorizontalAlignment="Stretch" Height="30" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Spacing="4" Margin="6,0,0,0">
+                                        <TextBlock Text="Tera Type (Active)" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" FontWeight="Medium" />
+                                        <ComboBox ItemsSource="{Binding TeraTypeList}" 
+                                                  SelectedValue="{Binding TeraTypeOverride, Mode=TwoWay}"
+                                                  SelectedValueBinding="{Binding Value}"
+                                                  DisplayMemberBinding="{Binding Text}"
+                                                  HorizontalAlignment="Stretch" Height="30" />
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- TAB 4: ATTACKS -->
+            <TabItem Header="Attacks">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,6,0,0">
+                    <StackPanel Spacing="10" Margin="2,4,4,4">
+                        <!-- Current Moves Card -->
+                        <Border Classes="card" Padding="10">
+                            <StackPanel Spacing="6">
+                                <TextBlock Text="Current Known Moves" FontWeight="Bold" FontSize="12" Margin="0,0,0,4" />
+
+                                <Grid ColumnDefinitions="*, 74, 74" Margin="0,0,0,2">
+                                    <TextBlock Grid.Column="0" Text="Move Name" FontWeight="Bold" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" />
+                                    <TextBlock Grid.Column="1" Text="PP" FontWeight="Bold" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center" />
+                                    <TextBlock Grid.Column="2" Text="PP-Ups" FontWeight="Bold" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center" />
+                                </Grid>
+
+                                <!-- Move 1 -->
+                                <Grid ColumnDefinitions="*, 74, 74" Margin="0,2">
+                                    <ComboBox Grid.Column="0" ItemsSource="{Binding MoveList}" 
+                                              SelectedValue="{Binding Move1, Mode=TwoWay}"
+                                              SelectedValueBinding="{Binding Value}"
+                                              DisplayMemberBinding="{Binding Text}"
+                                              HorizontalAlignment="Stretch" Height="30" Margin="0,0,4,0" />
+                                    <NumericUpDown Grid.Column="1" Classes="stat" Value="{Binding PP1, Mode=TwoWay}" Minimum="0" Maximum="64" Margin="2,0" />
+                                    <NumericUpDown Grid.Column="2" Classes="stat" Value="{Binding PPUps1, Mode=TwoWay}" Minimum="0" Maximum="3" Margin="2,0" />
+                                </Grid>
+
+                                <!-- Move 2 -->
+                                <Grid ColumnDefinitions="*, 74, 74" Margin="0,2">
+                                    <ComboBox Grid.Column="0" ItemsSource="{Binding MoveList}" 
+                                              SelectedValue="{Binding Move2, Mode=TwoWay}"
+                                              SelectedValueBinding="{Binding Value}"
+                                              DisplayMemberBinding="{Binding Text}"
+                                              HorizontalAlignment="Stretch" Height="30" Margin="0,0,4,0" />
+                                    <NumericUpDown Grid.Column="1" Classes="stat" Value="{Binding PP2, Mode=TwoWay}" Minimum="0" Maximum="64" Margin="2,0" />
+                                    <NumericUpDown Grid.Column="2" Classes="stat" Value="{Binding PPUps2, Mode=TwoWay}" Minimum="0" Maximum="3" Margin="2,0" />
+                                </Grid>
+
+                                <!-- Move 3 -->
+                                <Grid ColumnDefinitions="*, 74, 74" Margin="0,2">
+                                    <ComboBox Grid.Column="0" ItemsSource="{Binding MoveList}" 
+                                              SelectedValue="{Binding Move3, Mode=TwoWay}"
+                                              SelectedValueBinding="{Binding Value}"
+                                              DisplayMemberBinding="{Binding Text}"
+                                              HorizontalAlignment="Stretch" Height="30" Margin="0,0,4,0" />
+                                    <NumericUpDown Grid.Column="1" Classes="stat" Value="{Binding PP3, Mode=TwoWay}" Minimum="0" Maximum="64" Margin="2,0" />
+                                    <NumericUpDown Grid.Column="2" Classes="stat" Value="{Binding PPUps3, Mode=TwoWay}" Minimum="0" Maximum="3" Margin="2,0" />
+                                </Grid>
+
+                                <!-- Move 4 -->
+                                <Grid ColumnDefinitions="*, 74, 74" Margin="0,2">
+                                    <ComboBox Grid.Column="0" ItemsSource="{Binding MoveList}" 
+                                              SelectedValue="{Binding Move4, Mode=TwoWay}"
+                                              SelectedValueBinding="{Binding Value}"
+                                              DisplayMemberBinding="{Binding Text}"
+                                              HorizontalAlignment="Stretch" Height="30" Margin="0,0,4,0" />
+                                    <NumericUpDown Grid.Column="1" Classes="stat" Value="{Binding PP4, Mode=TwoWay}" Minimum="0" Maximum="64" Margin="2,0" />
+                                    <NumericUpDown Grid.Column="2" Classes="stat" Value="{Binding PPUps4, Mode=TwoWay}" Minimum="0" Maximum="3" Margin="2,0" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Relearn Moves Card -->
+                        <Border Classes="card" Padding="10">
+                            <StackPanel Spacing="6">
+                                <TextBlock Text="Relearn / Memory Moves" FontWeight="Bold" FontSize="12" Margin="0,0,0,4" />
+
+                                <ComboBox ItemsSource="{Binding MoveList}" 
+                                          SelectedValue="{Binding Relearn1, Mode=TwoWay}"
+                                          SelectedValueBinding="{Binding Value}"
+                                          DisplayMemberBinding="{Binding Text}"
+                                          HorizontalAlignment="Stretch" Height="30" Margin="0,1" />
+                                <ComboBox ItemsSource="{Binding MoveList}" 
+                                          SelectedValue="{Binding Relearn2, Mode=TwoWay}"
+                                          SelectedValueBinding="{Binding Value}"
+                                          DisplayMemberBinding="{Binding Text}"
+                                          HorizontalAlignment="Stretch" Height="30" Margin="0,1" />
+                                <ComboBox ItemsSource="{Binding MoveList}" 
+                                          SelectedValue="{Binding Relearn3, Mode=TwoWay}"
+                                          SelectedValueBinding="{Binding Value}"
+                                          DisplayMemberBinding="{Binding Text}"
+                                          HorizontalAlignment="Stretch" Height="30" Margin="0,1" />
+                                <ComboBox ItemsSource="{Binding MoveList}" 
+                                          SelectedValue="{Binding Relearn4, Mode=TwoWay}"
+                                          SelectedValueBinding="{Binding Value}"
+                                          DisplayMemberBinding="{Binding Text}"
+                                          HorizontalAlignment="Stretch" Height="30" Margin="0,1" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- TAB 5: TRAINER / MISC -->
+            <TabItem Header="OT / Misc">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,6,0,0">
+                    <StackPanel Spacing="10" Margin="2,4,4,4">
+                        <Border Classes="card" Padding="10">
+                            <StackPanel Spacing="8">
+                                <Grid ColumnDefinitions="*, 130">
+                                    <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,8,0">
+                                        <TextBlock Text="Trainer Name (OT)" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" FontWeight="Medium" />
+                                        <TextBox Text="{Binding OT, Mode=TwoWay}" Height="30" VerticalContentAlignment="Center" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Spacing="4">
+                                        <TextBlock Text="Gender" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" FontWeight="Medium" />
+                                        <ComboBox SelectedIndex="{Binding OTGender, Mode=TwoWay}" Height="30" HorizontalAlignment="Stretch">
+                                            <ComboBoxItem Content="♂ Male" />
+                                            <ComboBoxItem Content="♀ Female" />
+                                        </ComboBox>
+                                    </StackPanel>
+                                </Grid>
+
+                                <Grid ColumnDefinitions="*, *">
+                                    <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,6,0">
+                                        <TextBlock Text="TID (Trainer ID)" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" FontWeight="Medium" />
+                                        <NumericUpDown Value="{Binding TID, Mode=TwoWay}" Minimum="0" Maximum="65535" Height="30" FormatString="0" VerticalContentAlignment="Center" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Spacing="4" Margin="6,0,0,0">
+                                        <TextBlock Text="SID (Secret ID)" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" FontWeight="Medium" />
+                                        <NumericUpDown Value="{Binding SID, Mode=TwoWay}" Minimum="0" Maximum="65535" Height="30" FormatString="0" VerticalContentAlignment="Center" />
+                                    </StackPanel>
+                                </Grid>
+
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="Friendship (0-255)" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" FontWeight="Medium" />
+                                    <NumericUpDown Value="{Binding Friendship, Mode=TwoWay}" Minimum="0" Maximum="255" Height="30" FormatString="0" VerticalContentAlignment="Center" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Classes="card" Padding="10">
+                            <StackPanel Spacing="8">
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="PID (Hexadecimal Identifier)" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" FontWeight="Medium" />
+                                    <Grid ColumnDefinitions="*, Auto">
+                                        <TextBox Grid.Column="0" Text="{Binding PIDHex, Mode=TwoWay}" Height="30" 
+                                                 FontFamily="Menlo, Monaco, Consolas, monospace" VerticalContentAlignment="Center" Margin="0,0,6,0" />
+                                        <Button Grid.Column="1" Content="🎲 Reroll" Click="OnRerollPIDClick" Height="30" Classes="subtle" VerticalContentAlignment="Center" />
+                                    </Grid>
+                                </StackPanel>
+
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="Original Language" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" FontWeight="Medium" />
+                                    <ComboBox ItemsSource="{Binding LanguageList}" 
+                                              SelectedValue="{Binding Language, Mode=TwoWay}"
+                                              SelectedValueBinding="{Binding Value}"
+                                              DisplayMemberBinding="{Binding Text}"
+                                              HorizontalAlignment="Stretch" Height="30" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</UserControl>

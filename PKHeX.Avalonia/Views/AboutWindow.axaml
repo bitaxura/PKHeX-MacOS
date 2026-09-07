@@ -1,0 +1,50 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="520" d:DesignHeight="420"
+        x:Class="PKHeX.Avalonia.Views.AboutWindow"
+        Title="About PKHeX (macOS)"
+        Width="540" Height="440"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner">
+
+    <Grid RowDefinitions="Auto, *, Auto" Margin="20">
+        <!-- App Title Header -->
+        <Border Grid.Row="0" Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,0,0,14">
+            <StackPanel Spacing="6" HorizontalAlignment="Center">
+                <TextBlock Text="PKHeX (macOS)" FontSize="22" FontWeight="Bold" Foreground="#1E88E5" HorizontalAlignment="Center" />
+                <TextBlock Text="Native Pokémon Core Save File Editor" FontSize="13" Foreground="Gray" HorizontalAlignment="Center" />
+                <TextBlock Text="Version 2026 • Powered by .NET 10.0 &amp; Avalonia UI" FontSize="11" Foreground="Gray" HorizontalAlignment="Center" />
+            </StackPanel>
+        </Border>
+
+        <!-- Details Card -->
+        <Border Grid.Row="1" Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                BorderThickness="1" CornerRadius="8" Padding="16">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="System Architecture &amp; Runtime:" FontWeight="Bold" FontSize="12" />
+                    <TextBlock Text="• Platform: macOS Apple Silicon (ARM64) / Universal&#x0a;• Framework: Avalonia UI 11.3.9 + ReactiveUI&#x0a;• Core Engine: PKHeX.Core (Pure net10.0)&#x0a;• Drawing Engine: PKHeX.Drawing (RawImage pixel buffers)"
+                               FontSize="12" Foreground="Gray" FontFamily="Consolas, Menlo, monospace" />
+
+                    <TextBlock Text="Credits &amp; Acknowledgements:" FontWeight="Bold" FontSize="12" Margin="0,6,0,0" />
+                    <TextBlock Text="• PKHeX Core Logic &amp; WinForms original by Kaphotics and the Project Pokémon development team.&#x0a;• Fully ported to Avalonia UI for native macOS performance without Wine, Mono, or virtualization."
+                               FontSize="12" TextWrapping="Wrap" />
+
+                    <TextBlock Text="Legal Disclaimer:" FontWeight="Bold" FontSize="11" Foreground="Gray" Margin="0,6,0,0" />
+                    <TextBlock Text="Pokémon is a registered trademark of Nintendo, Creatures Inc., and GAME FREAK Inc. PKHeX is an independent, non-commercial open-source tool."
+                               FontSize="10" Foreground="Gray" TextWrapping="Wrap" />
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+        <!-- Close Button -->
+        <Grid Grid.Row="2" ColumnDefinitions="*, Auto" Margin="0,14,0,0">
+            <Button Grid.Column="1" Content="Close" Click="OnCloseClick" Width="90" Height="32" HorizontalContentAlignment="Center" />
+        </Grid>
+    </Grid>
+</Window>

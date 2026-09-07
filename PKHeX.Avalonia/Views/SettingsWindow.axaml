@@ -1,0 +1,78 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:PKHeX.Avalonia.ViewModels"
+        mc:Ignorable="d" d:DesignWidth="580" d:DesignHeight="480"
+        x:Class="PKHeX.Avalonia.Views.SettingsWindow"
+        x:DataType="vm:SettingsViewModel"
+        Title="PKHeX Preferences"
+        Width="600" Height="500"
+        WindowStartupLocation="CenterOwner">
+
+    <Grid RowDefinitions="*, Auto" Margin="16">
+        <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="14">
+                <!-- Card 1: File & Startup -->
+                <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                        BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                        BorderThickness="1" CornerRadius="8" Padding="14">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="File Operations &amp; Startup" FontWeight="Bold" FontSize="14" />
+                        <CheckBox Content="Create automatic backup copies of save files before saving"
+                                  IsChecked="{Binding BackupOnOpen, Mode=TwoWay}" />
+
+                        <Grid ColumnDefinitions="Auto, *">
+                            <TextBlock Grid.Column="0" Text="Default Save Format:" VerticalAlignment="Center" Margin="0,0,12,0" />
+                            <ComboBox Grid.Column="1" ItemsSource="{Binding Formats}"
+                                      SelectedValue="{Binding DefaultFormatIndex, Mode=TwoWay}"
+                                      SelectedValueBinding="{Binding Value}"
+                                      DisplayMemberBinding="{Binding Text}"
+                                      Height="32" HorizontalAlignment="Stretch" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Card 2: Editor & Legality -->
+                <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                        BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                        BorderThickness="1" CornerRadius="8" Padding="14">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="Editor &amp; Legality Verification" FontWeight="Bold" FontSize="14" />
+                        <CheckBox Content="Perform real-time legality validation on slot hover and PKM edit"
+                                  IsChecked="{Binding AutoCheckLegality, Mode=TwoWay}" />
+                        <CheckBox Content="Enable Unicode characters for trainer nicknames and OT names"
+                                  IsChecked="{Binding UnicodeTrainerNames, Mode=TwoWay}" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Card 3: Localization -->
+                <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                        BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                        BorderThickness="1" CornerRadius="8" Padding="14">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="Language &amp; Region" FontWeight="Bold" FontSize="14" />
+                        <Grid ColumnDefinitions="Auto, *">
+                            <TextBlock Grid.Column="0" Text="Interface Language:" VerticalAlignment="Center" Margin="0,0,12,0" />
+                            <ComboBox Grid.Column="1" ItemsSource="{Binding Languages}"
+                                      SelectedIndex="{Binding LanguageIndex, Mode=TwoWay}"
+                                      DisplayMemberBinding="{Binding Text}"
+                                      Height="32" HorizontalAlignment="Stretch" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <TextBlock Text="{Binding StatusMessage}" Foreground="#1E88E5" FontSize="12" />
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Bottom Actions -->
+        <Grid Grid.Row="1" ColumnDefinitions="*, Auto, Auto" Margin="0,14,0,0">
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                <Button Content="Cancel" Click="OnCancelClick" Width="90" Height="32" HorizontalContentAlignment="Center" />
+                <Button Content="Save Preferences" Click="OnSaveClick" Width="140" Height="32"
+                        Background="#2E7D32" Foreground="White" FontWeight="SemiBold" HorizontalContentAlignment="Center" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

@@ -15,9 +15,9 @@ public static class MysteryGiftSpriteUtil
     /// </summary>
     /// <param name="gift">The mystery gift to get the sprite for.</param>
     /// <returns>A <see cref="Bitmap"/> representing the sprite image.</returns>
-    public static Bitmap Sprite(this MysteryGift gift) => GetSprite(gift);
+    public static RawImage Sprite(this MysteryGift gift) => GetSprite(gift);
 
-    private static Bitmap GetSprite(MysteryGift gift)
+    private static RawImage GetSprite(MysteryGift gift)
     {
         if (gift.IsEmpty)
             return SpriteUtil.Spriter.None;
@@ -30,7 +30,7 @@ public static class MysteryGiftSpriteUtil
         return img;
     }
 
-    private static Bitmap GetBaseImage(MysteryGift gift)
+    private static RawImage GetBaseImage(MysteryGift gift)
     {
         if (gift is { IsEgg: true, Species: (int)Species.Manaphy }) // Manaphy Egg
             return SpriteUtil.GetMysteryGiftPreviewPoke(gift);

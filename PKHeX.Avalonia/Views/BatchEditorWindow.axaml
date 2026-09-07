@@ -1,0 +1,61 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:PKHeX.Avalonia.ViewModels"
+        mc:Ignorable="d" d:DesignWidth="720" d:DesignHeight="560"
+        x:Class="PKHeX.Avalonia.Views.BatchEditorWindow"
+        x:DataType="vm:BatchEditorViewModel"
+        Title="Batch Entity Editor"
+        Width="740" Height="580"
+        WindowStartupLocation="CenterOwner">
+
+    <Grid RowDefinitions="Auto, Auto, *, Auto, Auto" Margin="16">
+        <!-- Scope Selector -->
+        <Border Grid.Row="0" Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,10">
+            <Grid ColumnDefinitions="Auto, 200, *">
+                <TextBlock Grid.Column="0" Text="Batch Target Scope:" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,12,0" />
+                <ComboBox Grid.Column="1" SelectedIndex="{Binding ScopeIndex, Mode=TwoWay}" Height="32" HorizontalAlignment="Stretch">
+                    <ComboBoxItem Content="All PC Boxes" />
+                    <ComboBoxItem Content="Current Box Only" />
+                    <ComboBoxItem Content="Party Only" />
+                </ComboBox>
+            </Grid>
+        </Border>
+
+        <!-- Syntax Help Tip -->
+        <Border Grid.Row="1" Background="{DynamicResource SystemControlBackgroundAltMediumLowBrush}"
+                CornerRadius="6" Padding="10" Margin="0,0,0,10">
+            <StackPanel Spacing="4">
+                <TextBlock Text="💡 Batch Instruction Syntax Examples:" FontWeight="Bold" FontSize="12" />
+                <TextBlock Text="• Modify property: .CurrentLevel=100 or .Nature=3 or .IsShiny=true" FontSize="11" Foreground="Gray" />
+                <TextBlock Text="• Filter condition: !Species=25 (only applies to Pikachu) or !CurrentLevel=&lt;50" FontSize="11" Foreground="Gray" />
+            </StackPanel>
+        </Border>
+
+        <!-- Instructions Multi-line Editor -->
+        <Border Grid.Row="2" Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                BorderThickness="1" CornerRadius="8" Padding="8">
+            <TextBox Text="{Binding Instructions, Mode=TwoWay}"
+                     AcceptsReturn="True" TextWrapping="Wrap"
+                     FontFamily="Consolas, Menlo, monospace" FontSize="13"
+                     Watermark="Enter batch instructions (one per line)...&#x0a;e.g.&#x0a;.CurrentLevel=100&#x0a;.OT_Name=Ash"
+                     Background="Transparent" BorderThickness="0" VerticalContentAlignment="Top" />
+        </Border>
+
+        <!-- Status Message -->
+        <TextBlock Grid.Row="3" Text="{Binding StatusMessage}" Foreground="#1E88E5" FontWeight="SemiBold" FontSize="12" Margin="0,8,0,0" />
+
+        <!-- Bottom Action Buttons -->
+        <Grid Grid.Row="4" ColumnDefinitions="*, Auto, Auto" Margin="0,14,0,0">
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                <Button Content="Close" Click="OnCancelClick" Width="90" Height="32" HorizontalContentAlignment="Center" />
+                <Button Content="⚡ Run Batch Modification" Click="OnRunClick" Height="32"
+                        Background="#F57F17" Foreground="White" FontWeight="Bold" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

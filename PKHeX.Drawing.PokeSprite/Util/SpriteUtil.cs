@@ -52,21 +52,21 @@ public static class SpriteUtil
         Spriter.Initialize(sav);
     }
 
-    public static Bitmap GetBallSprite(byte ball)
+    public static RawImage GetBallSprite(byte ball)
     {
         string resource = SpriteName.GetResourceStringBall(ball);
-        return (Bitmap?)Resources.ResourceManager.GetObject(resource) ?? Resources._ball4; // Poké Ball (default)
+        return (RawImage?)Resources.ResourceManager.GetObject(resource) ?? Resources._ball4; // Poké Ball (default)
     }
 
-    public static Bitmap? GetItemSprite(int item) => Resources.ResourceManager.GetObject($"bitem_{item}") as Bitmap;
-    public static Bitmap? GetItemSpriteA(int item) => Resources.ResourceManager.GetObject($"aitem_{item}") as Bitmap;
+    public static RawImage? GetItemSprite(int item) => Resources.ResourceManager.GetObject($"bitem_{item}") as RawImage;
+    public static RawImage? GetItemSpriteA(int item) => Resources.ResourceManager.GetObject($"aitem_{item}") as RawImage;
 
-    public static Bitmap GetSprite(ushort species, byte form, byte gender, uint formarg, int item, bool isegg, Shiny shiny, EntityContext context = EntityContext.None)
+    public static RawImage GetSprite(ushort species, byte form, byte gender, uint formarg, int item, bool isegg, Shiny shiny, EntityContext context = EntityContext.None)
     {
         return Spriter.GetSprite(species, form, gender, formarg, item, isegg, shiny, context);
     }
 
-    private static Bitmap GetSprite(PKM pk)
+    private static RawImage GetSprite(PKM pk)
     {
         var formarg = pk is IFormArgument f ? f.FormArgument : 0;
         var shiny = ShinyExtensions.GetType(pk);
@@ -79,7 +79,7 @@ public static class SpriteUtil
                 img = Spriter.GetSprite(Spriter.ShadowLugia, Lugia, pk.SpriteItem, pk.IsEgg, shiny, pk.Context);
 
             GetSpriteGlow(pk, 75, 0, 130, out var pixels, out var baseSprite, true);
-            var glowImg = ImageUtil.GetBitmap(pixels, baseSprite.Width, baseSprite.Height, baseSprite.PixelFormat);
+            var glowImg = new RawImage(baseSprite.Width, baseSprite.Height, pixels);
             return ImageUtil.LayerImage(glowImg, img, 0, 0);
         }
         if (pk is IGigantamaxReadOnly { CanGigantamax: true })
@@ -95,7 +95,7 @@ public static class SpriteUtil
         return img;
     }
 
-    private static Bitmap GetSprite(PKM pk, SaveFile sav, int box, int slot, SlotVisibilityType visibility = SlotVisibilityType.None, StorageSlotType storage = StorageSlotType.None)
+    private static RawImage GetSprite(PKM pk, SaveFile sav, int box, int slot, SlotVisibilityType visibility = SlotVisibilityType.None, StorageSlotType storage = StorageSlotType.None)
     {
         bool inBox = (uint)slot < MaxSlotCount;
         bool empty = pk.Species == 0;
@@ -152,7 +152,7 @@ public static class SpriteUtil
         return sprite;
     }
 
-    private static void ApplyTeraColor(byte elementalType, Bitmap img, SpriteBackgroundType type)
+    private static void ApplyTeraColor(byte elementalType, RawImage img, SpriteBackgroundType type)
     {
         var color = TypeColor.GetTeraSpriteColor(elementalType);
         var thk = SpriteBuilder.ShowTeraThicknessStripe;
@@ -161,7 +161,7 @@ public static class SpriteUtil
         ApplyColor(img, type, color, thk, op, bg);
     }
 
-    public static void ApplyEncounterColor(IEncounterTemplate enc, Bitmap img, SpriteBackgroundType type)
+    public static void ApplyEncounterColor(IEncounterTemplate enc, RawImage img, SpriteBackgroundType type)
     {
         var index = (enc.GetType().Name.GetHashCode() * 0x43FD43FD);
         var color = Color.FromArgb(index);
@@ -171,7 +171,7 @@ public static class SpriteUtil
         ApplyColor(img, type, color, thk, op, bg);
     }
 
-    private static void ApplyColor(Bitmap img, SpriteBackgroundType type, Color color, int thick, byte opacStripe, byte opacBack)
+    private static void ApplyColor(RawImage img, SpriteBackgroundType type, Color color, int thick, byte opacStripe, byte opacBack)
     {
         if (type == SpriteBackgroundType.BottomStripe)
         {
@@ -195,7 +195,7 @@ public static class SpriteUtil
         }
     }
 
-    private static void ApplyExperience(PKM pk, Bitmap img, IEncounterTemplate? enc = null)
+    private static void ApplyExperience(PKM pk, RawImage img, IEncounterTemplate? enc = null)
     {
         const int bpp = 4;
         int start = bpp * SpriteWidth * (SpriteHeight - 1);
@@ -218,12 +218,12 @@ public static class SpriteUtil
         img.WritePixels(color, start, start + (SpriteWidth * bpp));
     }
 
-    private static readonly Bitmap[] PartyMarks =
+    private static readonly RawImage[] PartyMarks =
     [
         Resources.party1, Resources.party2, Resources.party3, Resources.party4, Resources.party5, Resources.party6,
     ];
 
-    public static void GetSpriteGlow(PKM pk, byte blue, byte green, byte red, out byte[] pixels, out Bitmap baseSprite, bool forceHollow = false)
+    public static void GetSpriteGlow(PKM pk, byte blue, byte green, byte red, out byte[] pixels, out RawImage baseSprite, bool forceHollow = false)
     {
         bool egg = pk.IsEgg;
         var formarg = pk is IFormArgument f ? f.FormArgument : 0;
@@ -232,9 +232,9 @@ public static class SpriteUtil
         GetSpriteGlow(baseSprite, blue, green, red, out pixels, forceHollow || egg);
     }
 
-    public static void GetSpriteGlow(Bitmap baseSprite, byte blue, byte green, byte red, out byte[] pixels, bool forceHollow = false)
+    public static void GetSpriteGlow(RawImage baseSprite, byte blue, byte green, byte red, out byte[] pixels, bool forceHollow = false)
     {
-        pixels = baseSprite.GetBitmapData();
+        pixels = (byte[])baseSprite.Data.Clone();
         if (!forceHollow)
         {
             ImageUtil.GlowEdges(pixels, blue, green, red, baseSprite.Width);
@@ -256,12 +256,12 @@ public static class SpriteUtil
         ArrayPool<byte>.Shared.Return(temp);
     }
 
-    public static Bitmap GetLegalIndicator(bool valid) => valid ? Resources.valid : Resources.warn;
+    public static RawImage GetLegalIndicator(bool valid) => valid ? Resources.valid : Resources.warn;
 
     // Extension Methods
-    public static Bitmap Sprite(this PKM pk) => GetSprite(pk);
+    public static RawImage Sprite(this PKM pk) => GetSprite(pk);
 
-    public static Bitmap Sprite(this IEncounterTemplate enc)
+    public static RawImage Sprite(this IEncounterTemplate enc)
     {
         if (enc is MysteryGift g)
             return GetMysteryGiftPreviewPoke(g);
@@ -295,7 +295,7 @@ public static class SpriteUtil
         _ => 0,
     };
 
-    public static Bitmap Sprite(this PKM pk, SaveFile sav, int box = -1, int slot = -1,
+    public static RawImage Sprite(this PKM pk, SaveFile sav, int box = -1, int slot = -1,
         SlotVisibilityType visibility = SlotVisibilityType.None, StorageSlotType storage = StorageSlotType.None)
     {
         var result = GetSprite(pk, sav, box, slot, visibility, storage);
@@ -308,7 +308,7 @@ public static class SpriteUtil
         return result;
     }
 
-    public static Bitmap GetMysteryGiftPreviewPoke(MysteryGift gift)
+    public static RawImage GetMysteryGiftPreviewPoke(MysteryGift gift)
     {
         if (gift is { IsEgg: true, Species: (int)Species.Manaphy }) // Manaphy Egg
             return GetSprite((int)Species.Manaphy, 0, 2, 0, 0, true, Shiny.Never, gift.Context);
@@ -330,7 +330,7 @@ public static class SpriteUtil
         return img;
     }
 
-    public static Image? GetStatusSprite(this StatusCondition value)
+    public static RawImage? GetStatusSprite(this StatusCondition value)
     {
         if (value == 0)
             return null;
@@ -349,7 +349,7 @@ public static class SpriteUtil
         return null;
     }
 
-    public static Image? GetStatusSprite(this StatusType value)
+    public static RawImage? GetStatusSprite(this StatusType value)
     {
         return value switch
         {

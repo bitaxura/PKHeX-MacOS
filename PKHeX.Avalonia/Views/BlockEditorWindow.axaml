@@ -1,0 +1,78 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:PKHeX.Avalonia.ViewModels"
+        mc:Ignorable="d" d:DesignWidth="850" d:DesignHeight="580"
+        x:Class="PKHeX.Avalonia.Views.BlockEditorWindow"
+        x:DataType="vm:BlockEditorViewModel"
+        Title="Block Data Inspector &amp; Editor"
+        Width="880" Height="600"
+        WindowStartupLocation="CenterOwner">
+
+    <Grid RowDefinitions="Auto, *, Auto" Margin="16">
+        <!-- Banner -->
+        <Border Grid.Row="0" Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,0,12">
+            <StackPanel Spacing="4">
+                <TextBlock Text="📦 Save File Block Inspector" FontWeight="Bold" FontSize="18" Foreground="#6A1B9A" />
+                <TextBlock Text="Inspect, export, and import binary save blocks for advanced debugging and research." FontSize="12" Foreground="Gray" />
+            </StackPanel>
+        </Border>
+
+        <!-- Main Body -->
+        <Grid Grid.Row="1" ColumnDefinitions="360, 14, *">
+            <!-- Left: Filter + Block List -->
+            <Border Grid.Column="0" Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                    BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                    BorderThickness="1" CornerRadius="8" Padding="10">
+                <Grid RowDefinitions="Auto, *">
+                    <TextBox Grid.Row="0" Text="{Binding FilterText, Mode=TwoWay}"
+                             Watermark="🔍 Filter by block key (e.g. 0x4F35)..."
+                             Height="32" Margin="0,0,0,8" VerticalContentAlignment="Center" />
+                    <ListBox Grid.Row="1" ItemsSource="{Binding FilteredBlocks}"
+                             SelectedItem="{Binding SelectedBlock, Mode=TwoWay}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:BlockItemViewModel">
+                                <TextBlock Text="{Binding DisplayTitle}" FontSize="12" FontFamily="Menlo, Courier New, monospace" Margin="0,2" />
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+            </Border>
+
+            <!-- Right: Block Details & Hex Preview -->
+            <Border Grid.Column="2" Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                    BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                    BorderThickness="1" CornerRadius="8" Padding="14">
+                <Grid RowDefinitions="Auto, Auto, *, Auto">
+                    <TextBlock Grid.Row="0" Text="{Binding SelectedBlock.DisplayTitle}" FontWeight="Bold" FontSize="15" Margin="0,0,0,10" />
+
+                    <!-- Actions -->
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="10" Margin="0,0,0,12">
+                        <Button Content="💾 Export Binary (.bin)..." Click="OnExportClick" Height="30" />
+                        <Button Content="📂 Import Binary (.bin)..." Click="OnImportClick" Height="30" />
+                    </StackPanel>
+
+                    <!-- Hex Preview -->
+                    <Border Grid.Row="2" Background="{DynamicResource SystemControlBackgroundAltMediumLowBrush}"
+                            CornerRadius="6" Padding="10">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <TextBlock Text="{Binding SelectedBlock.HexPreview}" FontFamily="Menlo, Courier New, monospace"
+                                       FontSize="11" TextWrapping="Wrap" />
+                        </ScrollViewer>
+                    </Border>
+
+                    <!-- Status -->
+                    <TextBlock Grid.Row="3" Text="{Binding StatusMessage}" Foreground="#1E88E5" FontSize="12" Margin="0,8,0,0" />
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- Bottom Actions -->
+        <Grid Grid.Row="2" ColumnDefinitions="*, Auto" Margin="0,14,0,0">
+            <Button Grid.Column="1" Content="Close" Click="OnCloseClick" Width="90" Height="32" HorizontalContentAlignment="Center" />
+        </Grid>
+    </Grid>
+</Window>
