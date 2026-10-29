@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Input.Platform;
 using Avalonia.Platform.Storage;
 using PKHeX.Core;
 using PKHeX.Drawing;
@@ -145,6 +146,8 @@ public sealed class MainViewModel : ReactiveObject
     // Contextual Editor Visibility (mirroring PKHeX WinForms SAVEditor.cs:1300-1345)
     public bool HasInventory => _saveFile != null && ((_saveFile.HasParty && _saveFile is not SAV4BR) || _saveFile is SAV7b);
     public bool HasTrainerInfo => _saveFile != null && (_saveFile.HasParty || _saveFile is SAV7b);
+    public bool HasParty => _saveFile != null && _saveFile.HasParty;
+    public bool HasDaycare => _saveFile is IDaycareStorage or IDaycareMulti;
     public bool HasPokedex => _saveFile != null && _saveFile.HasPokeDex;
     public bool HasEventFlags => _saveFile is IEventFlag37 or IEventFlagProvider37 or SAV1 or SAV2 or SAV8BS or SAV7b or SAV9ZA;
     public bool HasMysteryGift => _saveFile is IMysteryGiftStorageProvider;
@@ -213,10 +216,7 @@ public sealed class MainViewModel : ReactiveObject
         TrainerID = sav.DisplayTID.ToString();
         SecretID = sav.DisplaySID.ToString();
 
-        if (sav is SAV9ZA zaInit)
-        {
-            ZASaveUtil.EnsureBlockTypes(zaInit);
-        }
+        ZASaveUtil.EnsureBlockTypes(sav);
 
         _money = sav.Money;
         this.RaisePropertyChanged(nameof(Money));
@@ -249,6 +249,8 @@ public sealed class MainViewModel : ReactiveObject
 
         this.RaisePropertyChanged(nameof(HasInventory));
         this.RaisePropertyChanged(nameof(HasTrainerInfo));
+        this.RaisePropertyChanged(nameof(HasParty));
+        this.RaisePropertyChanged(nameof(HasDaycare));
         this.RaisePropertyChanged(nameof(HasPokedex));
         this.RaisePropertyChanged(nameof(HasEventFlags));
         this.RaisePropertyChanged(nameof(HasMysteryGift));
@@ -349,5 +351,133 @@ public sealed class MainViewModel : ReactiveObject
         {
             StatusMessage = $"Error saving file: {ex.Message}";
         }
+    }
+
+    public async Task<bool> ShowdownImportPKMAsync(IClipboard? clipboard)
+    {
+        if (clipboard == null) return false;
+        string? text = await clipboard.TryGetTextAsync();
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            StatusMessage = "Clipboard is empty.";
+            return false;
+        }
+
+        var sets = BattleTemplateTeams.TryGetSets(text);
+        var set = sets.FirstOrDefault();
+        if (set == null || set.Species == 0)
+        {
+            StatusMessage = "No valid Showdown set found in clipboard.";
+            return false;
+        }
+
+        var pk = Editor.PreparePKM();
+        pk.ApplySetDetails(set);
+        Editor.PopulateFields(pk);
+        StatusMessage = $"Imported Showdown set: {pk.Nickname} ({(Species)pk.Species}).";
+        return true;
+    }
+
+    public async Task<bool> ShowdownExportPKMAsync(IClipboard? clipboard)
+    {
+        if (clipboard == null) return false;
+        var pk = Editor.PreparePKM();
+        string text = ShowdownParsing.GetShowdownText(pk);
+        await clipboard.SetTextAsync(text);
+        StatusMessage = $"Copied {pk.Nickname} Showdown set to clipboard.";
+        return true;
+    }
+
+    public async Task<bool> ShowdownExportPartyAsync(IClipboard? clipboard)
+    {
+        if (clipboard == null || _saveFile == null) return false;
+        var party = _saveFile.PartyData.Where(p => p.Species != 0).ToList();
+        if (party.Count == 0)
+        {
+            StatusMessage = "Party is empty.";
+            return false;
+        }
+
+        string text = ShowdownParsing.GetShowdownSets(party, Environment.NewLine + Environment.NewLine);
+        await clipboard.SetTextAsync(text);
+        StatusMessage = $"Copied {party.Count} party Pokémon Showdown sets to clipboard.";
+        return true;
+    }
+
+    public async Task<bool> ShowdownExportCurrentBoxAsync(IClipboard? clipboard)
+    {
+        if (clipboard == null || _saveFile == null) return false;
+        var box = _saveFile.GetBoxData(_currentBoxIndex).Where(p => p.Species != 0).ToList();
+        if (box.Count == 0)
+        {
+            StatusMessage = $"Box {_currentBoxIndex + 1} is empty.";
+            return false;
+        }
+
+        string text = ShowdownParsing.GetShowdownSets(box, Environment.NewLine + Environment.NewLine);
+        await clipboard.SetTextAsync(text);
+        StatusMessage = $"Copied {box.Count} Pokémon from Box {_currentBoxIndex + 1} to clipboard.";
+        return true;
+    }
+
+    public async Task DumpCurrentBoxAsync(IStorageProvider storageProvider)
+    {
+        if (_saveFile == null || !_saveFile.HasBox)
+        {
+            StatusMessage = "No save file with box storage loaded.";
+            return;
+        }
+
+        var folders = await storageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+        {
+            Title = $"Select Destination Folder to Dump Box {_currentBoxIndex + 1}",
+            AllowMultiple = false
+        });
+
+        if (folders.Count == 0) return;
+        string path = folders[0].Path.LocalPath;
+        int count = BoxExport.Export(_saveFile, path, _currentBoxIndex, BoxExportSettings.Default);
+        StatusMessage = $"Dumped {count} Pokémon from Box {_currentBoxIndex + 1} to {Path.GetFileName(path)}.";
+    }
+
+    public async Task DumpAllBoxesAsync(IStorageProvider storageProvider)
+    {
+        if (_saveFile == null || !_saveFile.HasBox)
+        {
+            StatusMessage = "No save file with box storage loaded.";
+            return;
+        }
+
+        var folders = await storageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+        {
+            Title = "Select Destination Folder to Dump All Boxes",
+            AllowMultiple = false
+        });
+
+        if (folders.Count == 0) return;
+        string path = folders[0].Path.LocalPath;
+        int count = BoxExport.Export(_saveFile, path, BoxExportSettings.Default);
+        StatusMessage = $"Dumped {count} Pokémon from all {_saveFile.BoxCount} boxes to {Path.GetFileName(path)}.";
+    }
+
+    public async Task LoadBoxesAsync(IStorageProvider storageProvider)
+    {
+        if (_saveFile == null || !_saveFile.HasBox)
+        {
+            StatusMessage = "No save file with box storage loaded.";
+            return;
+        }
+
+        var folders = await storageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+        {
+            Title = "Select Folder Containing Pokémon Files to Load",
+            AllowMultiple = false
+        });
+
+        if (folders.Count == 0) return;
+        string path = folders[0].Path.LocalPath;
+        int loaded = _saveFile.LoadBoxes(path, out string result, _currentBoxIndex);
+        RefreshCurrentBox();
+        StatusMessage = loaded > 0 ? $"Loaded {loaded} Pokémon: {result}" : $"Box Load: {result}";
     }
 }

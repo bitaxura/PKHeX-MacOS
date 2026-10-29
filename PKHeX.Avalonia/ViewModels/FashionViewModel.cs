@@ -49,6 +49,29 @@ public sealed class FashionViewModel : ReactiveObject
             AddZAHairCategory("👁️ Eye Color", SaveBlockAccessor9ZA.KHairMake08ColorEyes, acc);
             AddZAHairCategory("💄 Lips & Makeup", SaveBlockAccessor9ZA.KHairMake11Lips, acc);
         }
+        else if (_sav is SAV9SV sv)
+        {
+            var acc = sv.Blocks;
+            AddSVCategory("👓 Eyewear", SaveBlockAccessor9SV.KFashionUnlockedEyewear, acc);
+            AddSVCategory("🧤 Gloves", SaveBlockAccessor9SV.KFashionUnlockedGloves, acc);
+            AddSVCategory("🎒 Bags", SaveBlockAccessor9SV.KFashionUnlockedBag, acc);
+            AddSVCategory("👟 Footwear", SaveBlockAccessor9SV.KFashionUnlockedFootwear, acc);
+            AddSVCategory("🧢 Headwear", SaveBlockAccessor9SV.KFashionUnlockedHeadwear, acc);
+            AddSVCategory("🧦 Legwear", SaveBlockAccessor9SV.KFashionUnlockedLegwear, acc);
+            AddSVCategory("👕 Uniforms & Clothing", SaveBlockAccessor9SV.KFashionUnlockedClothing, acc);
+            AddSVCategory("📱 Rotom Phone Cases", SaveBlockAccessor9SV.KFashionUnlockedPhoneCase, acc);
+        }
+    }
+
+    private void AddSVCategory(string name, uint key, SaveBlockAccessor9SV acc)
+    {
+        if (!acc.HasBlock(key))
+            return;
+
+        var block = acc.GetBlock(key);
+        var items = FashionItem9.GetArray(block.Data);
+        int unlocked = items.Count(z => z.Value != FashionItem9.None);
+        Categories.Add(new FashionCategoryViewModel(name, key, unlocked, items.Length, false));
     }
 
     private void AddZACategory(string name, uint key, SaveBlockAccessor9ZA acc)
@@ -98,9 +121,29 @@ public sealed class FashionViewModel : ReactiveObject
                     cat.UnlockedCount = cat.TotalCount;
                 }
             }
-
             _sav.State.Edited = true;
-            StatusMessage = "Successfully unlocked all clothing, hairstyles, and cosmetics!";
+            StatusMessage = "Successfully unlocked all Legends Z-A fashion items!";
+        }
+        else if (_sav is SAV9SV sv)
+        {
+            var acc = sv.Blocks;
+            foreach (var cat in Categories)
+            {
+                if (!acc.HasBlock(cat.BlockKey))
+                    continue;
+
+                var block = acc.GetBlock(cat.BlockKey);
+                var items = FashionItem9.GetArray(block.Data);
+                for (int i = 0; i < items.Length; i++)
+                {
+                    items[i].Value = (uint)i;
+                    items[i].IsNew = true;
+                }
+                FashionItem9.SetArray(items, block.Data);
+                cat.UnlockedCount = cat.TotalCount;
+            }
+            _sav.State.Edited = true;
+            StatusMessage = "Successfully unlocked all Scarlet & Violet wardrobe items!";
         }
     }
 

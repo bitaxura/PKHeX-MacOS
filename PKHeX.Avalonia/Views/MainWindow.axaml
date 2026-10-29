@@ -23,12 +23,26 @@
                     <NativeMenuItemSeparator />
                     <NativeMenuItem Header="Save SAV" Click="OnNativeMenuSaveClick" Gesture="Cmd+S" />
                     <NativeMenuItem Header="Save SAV As..." Click="OnNativeMenuSaveAsClick" Gesture="Cmd+Shift+S" />
+                    <NativeMenuItemSeparator />
+                    <NativeMenuItem Header="Load Boxes from Folder..." Click="OnNativeLoadBoxesClick" IsVisible="{Binding HasSaveFile}" />
+                    <NativeMenuItem Header="Dump Current Box to Folder..." Click="OnNativeDumpCurrentBoxClick" IsVisible="{Binding HasSaveFile}" />
+                    <NativeMenuItem Header="Dump All Boxes to Folder..." Click="OnNativeDumpAllBoxesClick" IsVisible="{Binding HasSaveFile}" />
+                </NativeMenu>
+            </NativeMenuItem>
+            <NativeMenuItem Header="Showdown">
+                <NativeMenu>
+                    <NativeMenuItem Header="Import Set from Clipboard" Click="OnNativeImportShowdownClick" Gesture="Cmd+I" />
+                    <NativeMenuItemSeparator />
+                    <NativeMenuItem Header="Export Active Pokémon to Showdown" Click="OnNativeExportShowdownPKMClick" Gesture="Cmd+E" />
+                    <NativeMenuItem Header="Export Party to Showdown" Click="OnNativeExportShowdownPartyClick" Gesture="Cmd+Shift+P" IsVisible="{Binding HasParty}" />
+                    <NativeMenuItem Header="Export Current Box to Showdown" Click="OnNativeExportShowdownBoxClick" Gesture="Cmd+B" IsVisible="{Binding HasSaveFile}" />
                 </NativeMenu>
             </NativeMenuItem>
             <NativeMenuItem Header="Tools">
                 <NativeMenu>
                     <NativeMenuItem Header="🎒 Inventory / Bag Editor..." Click="OnNativeOpenInventoryClick" IsVisible="{Binding HasInventory}" />
                     <NativeMenuItem Header="👤 Trainer Info Editor..." Click="OnNativeOpenTrainerClick" IsVisible="{Binding HasTrainerInfo}" />
+                    <NativeMenuItem Header="🏡 Daycare / Nursery Storage..." Click="OnNativeOpenDaycareClick" IsVisible="{Binding HasDaycare}" />
                     <NativeMenuItem Header="📖 Pokédex Editor..." Click="OnNativeOpenPokedexClick" IsVisible="{Binding HasPokedex}" />
                     <NativeMenuItem Header="🚩 Event Flags &amp; Constants..." Click="OnNativeOpenEventFlagsClick" IsVisible="{Binding HasEventFlags}" />
                     <NativeMenuItem Header="🎁 Mystery Gift / Wonder Cards..." Click="OnNativeOpenMysteryGiftClick" IsVisible="{Binding HasMysteryGift}" />
@@ -39,8 +53,6 @@
                     <NativeMenuItem Header="🍩 Donut Bakery Editor..." Click="OnNativeOpenDonutsClick" IsVisible="{Binding HasDonuts}" />
                     <NativeMenuItem Header="👗 Fashion &amp; Wardrobe..." Click="OnNativeOpenFashionClick" IsVisible="{Binding HasFashion}" />
                     <NativeMenuItem Header="📦 Block Data Inspector..." Click="OnNativeOpenBlockEditorClick" IsVisible="{Binding HasBlockInspector}" />
-                    <NativeMenuItemSeparator />
-                    <NativeMenuItem Header="Export Current Box Showdown" Click="OnNativeMenuExportShowdownClick" />
                     <NativeMenuItemSeparator />
                     <NativeMenuItem Header="Preferences..." Click="OnNativeOpenSettingsClick" Gesture="Cmd+," />
                 </NativeMenu>
@@ -134,6 +146,7 @@
                                 <!-- Group 1: Save Editors -->
                                 <MenuItem Header="🎒 Inventory / Bag Editor..." Click="OnOpenInventoryClick" IsVisible="{Binding HasInventory}" />
                                 <MenuItem Header="👤 Trainer Info Editor..." Click="OnOpenTrainerClick" IsVisible="{Binding HasTrainerInfo}" />
+                                <MenuItem Header="🏡 Daycare / Nursery Storage..." Click="OnOpenDaycareClick" IsVisible="{Binding HasDaycare}" />
                                 <MenuItem Header="📖 Pokédex Editor..." Click="OnOpenPokedexClick" IsVisible="{Binding HasPokedex}" />
                                 <MenuItem Header="🚩 Event Flags &amp; Constants..." Click="OnOpenEventFlagsClick" IsVisible="{Binding HasEventFlags}" />
                                 <MenuItem Header="🎁 Mystery Gift / Wonder Cards..." Click="OnOpenMysteryGiftClick" IsVisible="{Binding HasMysteryGift}" />
@@ -146,10 +159,20 @@
                                 <MenuItem Header="⚡ Batch Editor..." Click="OnOpenBatchEditorClick" IsEnabled="{Binding HasSaveFile}" />
                                 <MenuItem Header="⚖️ Legality Analysis Report..." Click="OnOpenLegalityReportClick" />
                                 <MenuItem Header="🏆 Hall of Fame Records..." Click="OnOpenHallOfFameClick" IsVisible="{Binding HasHallOfFame}" />
-                                <MenuItem Header="📋 Export Current Box Showdown" Click="OnMenuExportShowdownClick" IsEnabled="{Binding HasSaveFile}" />
                                 <Separator />
 
-                                <!-- Group 3: Advanced & Preferences -->
+                                <!-- Group 3: Showdown & Box Import/Export -->
+                                <MenuItem Header="📥 Import Showdown Set" Click="OnMenuImportShowdownClick" />
+                                <MenuItem Header="📋 Export Active PKM Showdown" Click="OnMenuExportShowdownPKMClick" />
+                                <MenuItem Header="📋 Export Party Showdown" Click="OnMenuExportShowdownPartyClick" IsVisible="{Binding HasParty}" />
+                                <MenuItem Header="📋 Export Current Box Showdown" Click="OnMenuExportShowdownClick" IsEnabled="{Binding HasSaveFile}" />
+                                <Separator />
+                                <MenuItem Header="📥 Load Boxes from Folder..." Click="OnMenuLoadBoxesClick" IsEnabled="{Binding HasSaveFile}" />
+                                <MenuItem Header="📤 Dump Current Box to Folder..." Click="OnMenuDumpCurrentBoxClick" IsEnabled="{Binding HasSaveFile}" />
+                                <MenuItem Header="📤 Dump All Boxes to Folder..." Click="OnMenuDumpAllBoxesClick" IsEnabled="{Binding HasSaveFile}" />
+                                <Separator />
+
+                                <!-- Group 4: Advanced & Preferences -->
                                 <MenuItem Header="📦 Save Block Data Inspector..." Click="OnOpenBlockEditorClick" IsVisible="{Binding HasBlockInspector}" />
                                 <MenuItem Header="⚙️ Preferences..." Click="OnOpenSettingsClick" InputGesture="Cmd+," />
                             </MenuFlyout>

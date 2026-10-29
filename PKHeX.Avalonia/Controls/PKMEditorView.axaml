@@ -42,7 +42,7 @@
                         <CheckBox Grid.Column="1" Content="Nicknamed" IsChecked="{Binding IsNicknamed, Mode=TwoWay}" Margin="8,0,0,0" VerticalAlignment="Center" FontSize="11" />
                     </Grid>
 
-                    <!-- Legality Badge & Export PKM Action -->
+                    <!-- Legality Badge & Quick Action Buttons -->
                     <Grid ColumnDefinitions="*, Auto" Margin="0,2,0,0">
                         <!-- Clickable Legality Chip -->
                         <Button Grid.Column="0" Click="OnLegalityBadgeClick" 
@@ -53,10 +53,22 @@
                             <TextBlock Text="{Binding LegalityText}" FontSize="11" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" />
                         </Button>
 
-                        <!-- Quick Export Entity File -->
-                        <Button Grid.Column="1" Content="💾 Export .pk*" Click="OnExportPKMClick"
-                                Classes="subtle" Height="26" FontSize="11" Padding="8,2"
-                                ToolTip.Tip="Export raw entity file to disk" />
+                        <!-- Quick Action Buttons -->
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                            <Button Content="🎀 Ribbons..." Click="OnOpenRibbonsClick"
+                                    IsVisible="{Binding CanHaveRibbons}"
+                                    Classes="subtle" Height="26" FontSize="11" Padding="6,2"
+                                    ToolTip.Tip="Open Ribbons &amp; Marks Editor" />
+                            <Button Content="📋 Showdown" Click="OnShowdownExportClick"
+                                    Classes="subtle" Height="26" FontSize="11" Padding="6,2"
+                                    ToolTip.Tip="Copy Showdown text format to clipboard" />
+                            <Button Content="📥 Import" Click="OnShowdownImportClick"
+                                    Classes="subtle" Height="26" FontSize="11" Padding="6,2"
+                                    ToolTip.Tip="Import Showdown set from clipboard" />
+                            <Button Content="💾 Export" Click="OnExportPKMClick"
+                                    Classes="subtle" Height="26" FontSize="11" Padding="6,2"
+                                    ToolTip.Tip="Export raw entity file to disk" />
+                        </StackPanel>
                     </Grid>
                 </StackPanel>
             </Grid>
@@ -143,6 +155,30 @@
                                 </StackPanel>
                             </Grid>
                         </Border>
+
+                        <!-- Pokérus Card -->
+                        <Border Classes="card" Padding="10" IsVisible="{Binding CanPokerus}">
+                            <StackPanel Spacing="8">
+                                <Grid ColumnDefinitions="*, Auto">
+                                    <TextBlock Text="🦠 Pokérus Status" FontWeight="Bold" FontSize="12" VerticalAlignment="Center" />
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                                        <Button Content="Infect" Click="OnInfectPokerusClick" Classes="subtle" Height="26" FontSize="11" Padding="8,0" />
+                                        <Button Content="Cure" Click="OnCurePokerusClick" Classes="subtle" Height="26" FontSize="11" Padding="8,0" />
+                                        <Button Content="Clear" Click="OnClearPokerusClick" Classes="subtle" Height="26" FontSize="11" Padding="8,0" />
+                                    </StackPanel>
+                                </Grid>
+                                <Grid ColumnDefinitions="*, *">
+                                    <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,6,0">
+                                        <TextBlock Text="Strain (0-15)" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" FontWeight="Medium" />
+                                        <NumericUpDown Value="{Binding PokerusStrain, Mode=TwoWay}" Minimum="0" Maximum="15" Height="30" FormatString="0" VerticalContentAlignment="Center" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Spacing="4" Margin="6,0,0,0">
+                                        <TextBlock Text="Days Remaining (0-15)" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" FontWeight="Medium" />
+                                        <NumericUpDown Value="{Binding PokerusDays, Mode=TwoWay}" Minimum="0" Maximum="15" Height="30" FormatString="0" VerticalContentAlignment="Center" />
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
@@ -206,69 +242,76 @@
                         <Border Classes="card" Padding="10">
                             <StackPanel Spacing="4">
                                 <!-- Stat Header -->
-                                <Grid ColumnDefinitions="64, 104, 104, *" Margin="0,0,0,6">
+                                <Grid ColumnDefinitions="60, 84, 40, 84, *" Margin="0,0,0,6">
                                     <TextBlock Grid.Column="0" Text="Stat" FontWeight="Bold" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
                                     <TextBlock Grid.Column="1" Text="IV (0-31)" FontWeight="Bold" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                    <TextBlock Grid.Column="2" Text="EV (0-252)" FontWeight="Bold" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                    <TextBlock Grid.Column="3" Text="Total" FontWeight="Bold" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="2" Text="HT" FontWeight="Bold" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" ToolTip.Tip="Hyper Trained" />
+                                    <TextBlock Grid.Column="3" Text="EV (0-252)" FontWeight="Bold" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="4" Text="Total" FontWeight="Bold" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Grid>
 
                                 <!-- HP -->
-                                <Grid ColumnDefinitions="64, 104, 104, *" Margin="0,1">
+                                <Grid ColumnDefinitions="60, 84, 40, 84, *" Margin="0,1">
                                     <TextBlock Grid.Column="0" Text="HP" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" />
-                                    <NumericUpDown Grid.Column="1" Classes="stat" Value="{Binding IV_HP, Mode=TwoWay}" Minimum="0" Maximum="31" Margin="3,0" />
-                                    <NumericUpDown Grid.Column="2" Classes="stat" Value="{Binding EV_HP, Mode=TwoWay}" Minimum="0" Maximum="252" Margin="3,0" />
-                                    <Border Grid.Column="3" Background="#181820" CornerRadius="4" Padding="6,2" HorizontalAlignment="Center" MinWidth="48">
+                                    <NumericUpDown Grid.Column="1" Classes="stat" Value="{Binding IV_HP, Mode=TwoWay}" Minimum="0" Maximum="31" Margin="2,0" />
+                                    <CheckBox Grid.Column="2" IsChecked="{Binding HT_HP, Mode=TwoWay}" IsEnabled="{Binding CanHyperTrain}" HorizontalAlignment="Center" ToolTip.Tip="Hyper Train HP" />
+                                    <NumericUpDown Grid.Column="3" Classes="stat" Value="{Binding EV_HP, Mode=TwoWay}" Minimum="0" Maximum="252" Margin="2,0" />
+                                    <Border Grid.Column="4" Background="#181820" CornerRadius="4" Padding="6,2" HorizontalAlignment="Center" MinWidth="48">
                                         <TextBlock Text="{Binding Stat_HP}" FontWeight="Bold" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                     </Border>
                                 </Grid>
 
                                 <!-- Attack -->
-                                <Grid ColumnDefinitions="64, 104, 104, *" Margin="0,1">
+                                <Grid ColumnDefinitions="60, 84, 40, 84, *" Margin="0,1">
                                     <TextBlock Grid.Column="0" Text="Attack" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" />
-                                    <NumericUpDown Grid.Column="1" Classes="stat" Value="{Binding IV_ATK, Mode=TwoWay}" Minimum="0" Maximum="31" Margin="3,0" />
-                                    <NumericUpDown Grid.Column="2" Classes="stat" Value="{Binding EV_ATK, Mode=TwoWay}" Minimum="0" Maximum="252" Margin="3,0" />
-                                    <Border Grid.Column="3" Background="#181820" CornerRadius="4" Padding="6,2" HorizontalAlignment="Center" MinWidth="48">
+                                    <NumericUpDown Grid.Column="1" Classes="stat" Value="{Binding IV_ATK, Mode=TwoWay}" Minimum="0" Maximum="31" Margin="2,0" />
+                                    <CheckBox Grid.Column="2" IsChecked="{Binding HT_ATK, Mode=TwoWay}" IsEnabled="{Binding CanHyperTrain}" HorizontalAlignment="Center" ToolTip.Tip="Hyper Train Attack" />
+                                    <NumericUpDown Grid.Column="3" Classes="stat" Value="{Binding EV_ATK, Mode=TwoWay}" Minimum="0" Maximum="252" Margin="2,0" />
+                                    <Border Grid.Column="4" Background="#181820" CornerRadius="4" Padding="6,2" HorizontalAlignment="Center" MinWidth="48">
                                         <TextBlock Text="{Binding Stat_ATK}" FontWeight="Bold" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                     </Border>
                                 </Grid>
 
                                 <!-- Defense -->
-                                <Grid ColumnDefinitions="64, 104, 104, *" Margin="0,1">
+                                <Grid ColumnDefinitions="60, 84, 40, 84, *" Margin="0,1">
                                     <TextBlock Grid.Column="0" Text="Defense" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" />
-                                    <NumericUpDown Grid.Column="1" Classes="stat" Value="{Binding IV_DEF, Mode=TwoWay}" Minimum="0" Maximum="31" Margin="3,0" />
-                                    <NumericUpDown Grid.Column="2" Classes="stat" Value="{Binding EV_DEF, Mode=TwoWay}" Minimum="0" Maximum="252" Margin="3,0" />
-                                    <Border Grid.Column="3" Background="#181820" CornerRadius="4" Padding="6,2" HorizontalAlignment="Center" MinWidth="48">
+                                    <NumericUpDown Grid.Column="1" Classes="stat" Value="{Binding IV_DEF, Mode=TwoWay}" Minimum="0" Maximum="31" Margin="2,0" />
+                                    <CheckBox Grid.Column="2" IsChecked="{Binding HT_DEF, Mode=TwoWay}" IsEnabled="{Binding CanHyperTrain}" HorizontalAlignment="Center" ToolTip.Tip="Hyper Train Defense" />
+                                    <NumericUpDown Grid.Column="3" Classes="stat" Value="{Binding EV_DEF, Mode=TwoWay}" Minimum="0" Maximum="252" Margin="2,0" />
+                                    <Border Grid.Column="4" Background="#181820" CornerRadius="4" Padding="6,2" HorizontalAlignment="Center" MinWidth="48">
                                         <TextBlock Text="{Binding Stat_DEF}" FontWeight="Bold" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                     </Border>
                                 </Grid>
 
                                 <!-- Speed -->
-                                <Grid ColumnDefinitions="64, 104, 104, *" Margin="0,1">
+                                <Grid ColumnDefinitions="60, 84, 40, 84, *" Margin="0,1">
                                     <TextBlock Grid.Column="0" Text="Speed" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" />
-                                    <NumericUpDown Grid.Column="1" Classes="stat" Value="{Binding IV_SPE, Mode=TwoWay}" Minimum="0" Maximum="31" Margin="3,0" />
-                                    <NumericUpDown Grid.Column="2" Classes="stat" Value="{Binding EV_SPE, Mode=TwoWay}" Minimum="0" Maximum="252" Margin="3,0" />
-                                    <Border Grid.Column="3" Background="#181820" CornerRadius="4" Padding="6,2" HorizontalAlignment="Center" MinWidth="48">
+                                    <NumericUpDown Grid.Column="1" Classes="stat" Value="{Binding IV_SPE, Mode=TwoWay}" Minimum="0" Maximum="31" Margin="2,0" />
+                                    <CheckBox Grid.Column="2" IsChecked="{Binding HT_SPE, Mode=TwoWay}" IsEnabled="{Binding CanHyperTrain}" HorizontalAlignment="Center" ToolTip.Tip="Hyper Train Speed" />
+                                    <NumericUpDown Grid.Column="3" Classes="stat" Value="{Binding EV_SPE, Mode=TwoWay}" Minimum="0" Maximum="252" Margin="2,0" />
+                                    <Border Grid.Column="4" Background="#181820" CornerRadius="4" Padding="6,2" HorizontalAlignment="Center" MinWidth="48">
                                         <TextBlock Text="{Binding Stat_SPE}" FontWeight="Bold" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                     </Border>
                                 </Grid>
 
                                 <!-- Sp. Atk -->
-                                <Grid ColumnDefinitions="64, 104, 104, *" Margin="0,1">
+                                <Grid ColumnDefinitions="60, 84, 40, 84, *" Margin="0,1">
                                     <TextBlock Grid.Column="0" Text="Sp. Atk" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" />
-                                    <NumericUpDown Grid.Column="1" Classes="stat" Value="{Binding IV_SPA, Mode=TwoWay}" Minimum="0" Maximum="31" Margin="3,0" />
-                                    <NumericUpDown Grid.Column="2" Classes="stat" Value="{Binding EV_SPA, Mode=TwoWay}" Minimum="0" Maximum="252" Margin="3,0" />
-                                    <Border Grid.Column="3" Background="#181820" CornerRadius="4" Padding="6,2" HorizontalAlignment="Center" MinWidth="48">
+                                    <NumericUpDown Grid.Column="1" Classes="stat" Value="{Binding IV_SPA, Mode=TwoWay}" Minimum="0" Maximum="31" Margin="2,0" />
+                                    <CheckBox Grid.Column="2" IsChecked="{Binding HT_SPA, Mode=TwoWay}" IsEnabled="{Binding CanHyperTrain}" HorizontalAlignment="Center" ToolTip.Tip="Hyper Train Sp. Atk" />
+                                    <NumericUpDown Grid.Column="3" Classes="stat" Value="{Binding EV_SPA, Mode=TwoWay}" Minimum="0" Maximum="252" Margin="2,0" />
+                                    <Border Grid.Column="4" Background="#181820" CornerRadius="4" Padding="6,2" HorizontalAlignment="Center" MinWidth="48">
                                         <TextBlock Text="{Binding Stat_SPA}" FontWeight="Bold" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                     </Border>
                                 </Grid>
 
                                 <!-- Sp. Def -->
-                                <Grid ColumnDefinitions="64, 104, 104, *" Margin="0,1">
+                                <Grid ColumnDefinitions="60, 84, 40, 84, *" Margin="0,1">
                                     <TextBlock Grid.Column="0" Text="Sp. Def" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" />
-                                    <NumericUpDown Grid.Column="1" Classes="stat" Value="{Binding IV_SPD, Mode=TwoWay}" Minimum="0" Maximum="31" Margin="3,0" />
-                                    <NumericUpDown Grid.Column="2" Classes="stat" Value="{Binding EV_SPD, Mode=TwoWay}" Minimum="0" Maximum="252" Margin="3,0" />
-                                    <Border Grid.Column="3" Background="#181820" CornerRadius="4" Padding="6,2" HorizontalAlignment="Center" MinWidth="48">
+                                    <NumericUpDown Grid.Column="1" Classes="stat" Value="{Binding IV_SPD, Mode=TwoWay}" Minimum="0" Maximum="31" Margin="2,0" />
+                                    <CheckBox Grid.Column="2" IsChecked="{Binding HT_SPD, Mode=TwoWay}" IsEnabled="{Binding CanHyperTrain}" HorizontalAlignment="Center" ToolTip.Tip="Hyper Train Sp. Def" />
+                                    <NumericUpDown Grid.Column="3" Classes="stat" Value="{Binding EV_SPD, Mode=TwoWay}" Minimum="0" Maximum="252" Margin="2,0" />
+                                    <Border Grid.Column="4" Background="#181820" CornerRadius="4" Padding="6,2" HorizontalAlignment="Center" MinWidth="48">
                                         <TextBlock Text="{Binding Stat_SPD}" FontWeight="Bold" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                     </Border>
                                 </Grid>
@@ -278,6 +321,20 @@
                                     <Grid ColumnDefinitions="*, Auto">
                                         <TextBlock Grid.Column="0" Text="Effort Value Allocation (Max 510)" FontWeight="Medium" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
                                         <TextBlock Grid.Column="1" Text="{Binding EV_Total, StringFormat='{}{0} / 510'}" FontWeight="Bold" FontSize="12" Foreground="{DynamicResource AccentPrimaryBrush}" VerticalAlignment="Center" />
+                                    </Grid>
+                                </Border>
+
+                                <!-- Hyper Training Actions & Hidden Power -->
+                                <Border Background="#14141A" CornerRadius="6" Padding="10,6" Margin="0,4,0,0">
+                                    <Grid ColumnDefinitions="*, Auto">
+                                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                            <TextBlock Text="Hidden Power:" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" FontWeight="Medium" VerticalAlignment="Center" />
+                                            <TextBlock Text="{Binding HiddenPowerDisplay}" FontWeight="Bold" FontSize="11" Foreground="{DynamicResource AccentPrimaryBrush}" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" IsVisible="{Binding CanHyperTrain}">
+                                            <Button Content="HT All" Click="OnHyperTrainAllClick" Classes="subtle" Height="24" FontSize="10" Padding="6,0" ToolTip.Tip="Hyper Train All Stats" />
+                                            <Button Content="Clear HT" Click="OnHyperTrainClearClick" Classes="subtle" Height="24" FontSize="10" Padding="6,0" ToolTip.Tip="Clear All Hyper Training" />
+                                        </StackPanel>
                                     </Grid>
                                 </Border>
                             </StackPanel>

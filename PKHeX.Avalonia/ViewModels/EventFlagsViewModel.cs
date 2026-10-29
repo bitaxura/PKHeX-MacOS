@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using PKHeX.Core;
 using ReactiveUI;
 
@@ -54,8 +53,8 @@ public sealed class EventWorkItemViewModel : ReactiveObject
 public sealed class EventFlagsViewModel : ReactiveObject
 {
     private readonly SaveFile _saveFile;
+    private readonly EventWorkspace<IEventFlag37, ushort>? _workspace;
     private readonly IEventFlagArray? _flagArray;
-    private readonly IEventWorkArray<ushort>? _workArray;
     private string _flagSearchText = string.Empty;
     private string _workSearchText = string.Empty;
 
@@ -91,28 +90,10 @@ public sealed class EventFlagsViewModel : ReactiveObject
     {
         _saveFile = sav;
 
-        if (sav is IEventFlagArray flags)
-        {
-            _flagArray = flags;
-        }
-        else if (sav is IEventFlagProvider37 prov)
-        {
-            _flagArray = prov.EventWork;
-        }
-
-        if (sav is IEventWorkArray<ushort> work)
-        {
-            _workArray = work;
-        }
-        else if (sav is IEventFlagProvider37 provWork)
-        {
-            _workArray = provWork.EventWork;
-        }
-
         if (sav is SAV9ZA za)
         {
             var flagStorage = za.Blocks.Event;
-            int flagCount = Math.Min(flagStorage.Count, 1000);
+            int flagCount = Math.Min(flagStorage.Count, 2000);
             for (int i = 0; i < flagCount; i++)
             {
                 bool isSet = flagStorage.GetValue(i);
@@ -120,42 +101,113 @@ public sealed class EventFlagsViewModel : ReactiveObject
             }
 
             var workStorage = za.Blocks.Work;
-            int workCount = Math.Min(workStorage.Count, 500);
+            int workCount = Math.Min(workStorage.Count, 1000);
             for (int i = 0; i < workCount; i++)
             {
                 int val = (int)workStorage.GetValue(i);
                 AllWorkValues.Add(new EventWorkItemViewModel(i, $"Work Value {i}", val));
             }
         }
+        else if (sav is SAV8BS bs)
+        {
+            var obj = bs.FlagWork;
+            string prefix = bs.Version == GameVersion.BD ? "bd" : "sp";
+            var editor = new EventLabelCollectionSystem(prefix, obj.CountFlag - 1, obj.CountSystem - 1, obj.CountWork - 1);
+            var flagDict = new System.Collections.Generic.Dictionary<int, string>();
+            foreach (var item in editor.Flag)
+                flagDict.TryAdd(item.Index, item.Name);
+            var workDict = new System.Collections.Generic.Dictionary<int, string>();
+            foreach (var item in editor.Work)
+                workDict.TryAdd(item.Index, item.Name);
+
+            for (int i = 0; i < obj.CountFlag; i++)
+            {
+                string name = flagDict.TryGetValue(i, out var label) ? label : $"Flag {i}";
+                AllFlags.Add(new EventFlagItemViewModel(i, name, obj.GetFlag(i)));
+            }
+
+            for (int i = 0; i < obj.CountWork; i++)
+            {
+                string name = workDict.TryGetValue(i, out var label) ? label : $"Work {i}";
+                AllWorkValues.Add(new EventWorkItemViewModel(i, name, (int)obj.GetWork(i)));
+            }
+        }
+        else if (sav is SAV7b gg)
+        {
+            var ew = gg.EventWork;
+            for (int i = 0; i < ew.CountFlag; i++)
+                AllFlags.Add(new EventFlagItemViewModel(i, $"Flag {i}", ew.GetFlag(i)));
+
+            for (int i = 0; i < ew.CountWork; i++)
+                AllWorkValues.Add(new EventWorkItemViewModel(i, $"Work {i}", ew.GetWork(i)));
+        }
         else
         {
-            LoadData();
+            IEventFlag37? targetFlags = sav switch
+            {
+                IEventFlag37 f => f,
+                IEventFlagProvider37 p => p.EventWork,
+                _ => null,
+            };
+
+            if (targetFlags != null)
+            {
+                try
+                {
+                    _workspace = new EventWorkspace<IEventFlag37, ushort>(targetFlags, sav.Version);
+                    var flagDict = new System.Collections.Generic.Dictionary<int, string>();
+                    foreach (var item in _workspace.Labels.Flag)
+                        flagDict.TryAdd(item.Index, item.Name);
+                    var workDict = new System.Collections.Generic.Dictionary<int, string>();
+                    foreach (var item in _workspace.Labels.Work)
+                        workDict.TryAdd(item.Index, item.Name);
+
+                    for (int i = 0; i < _workspace.Flags.Length; i++)
+                    {
+                        string name = flagDict.TryGetValue(i, out var label) ? label : $"Flag {i}";
+                        AllFlags.Add(new EventFlagItemViewModel(i, name, _workspace.Flags[i]));
+                    }
+
+                    for (int i = 0; i < _workspace.Values.Length; i++)
+                    {
+                        string name = workDict.TryGetValue(i, out var label) ? label : $"Constant {i}";
+                        AllWorkValues.Add(new EventWorkItemViewModel(i, name, _workspace.Values[i]));
+                    }
+                }
+                catch
+                {
+                    _flagArray = targetFlags;
+                    LoadGenericFlags();
+                }
+            }
+            else if (sav is IEventFlagArray efa)
+            {
+                _flagArray = efa;
+                LoadGenericFlags();
+            }
         }
 
         ApplyFlagFilter();
         ApplyWorkFilter();
     }
 
-    private void LoadData()
+    private void LoadGenericFlags()
     {
         if (_flagArray != null)
         {
-            int count = _flagArray.EventFlagCount;
-            for (int i = 0; i < count; i++)
-            {
-                bool isSet = _flagArray.GetEventFlag(i);
-                AllFlags.Add(new EventFlagItemViewModel(i, $"Flag {i}", isSet));
-            }
+            for (int i = 0; i < _flagArray.EventFlagCount; i++)
+                AllFlags.Add(new EventFlagItemViewModel(i, $"Flag {i}", _flagArray.GetEventFlag(i)));
         }
 
-        if (_workArray != null)
+        if (_saveFile is IEventWorkArray<ushort> ewu)
         {
-            int count = _workArray.EventWorkCount;
-            for (int i = 0; i < count; i++)
-            {
-                int val = _workArray.GetWork(i);
-                AllWorkValues.Add(new EventWorkItemViewModel(i, $"Constant {i}", val));
-            }
+            for (int i = 0; i < ewu.EventWorkCount; i++)
+                AllWorkValues.Add(new EventWorkItemViewModel(i, $"Constant {i}", ewu.GetWork(i)));
+        }
+        else if (_saveFile is IEventWorkArray<byte> ewb)
+        {
+            for (int i = 0; i < ewb.EventWorkCount; i++)
+                AllWorkValues.Add(new EventWorkItemViewModel(i, $"Work {i}", ewb.GetWork(i)));
         }
     }
 
@@ -189,7 +241,21 @@ public sealed class EventFlagsViewModel : ReactiveObject
 
     public void Save()
     {
-        if (_saveFile is SAV9ZA za)
+        if (_workspace != null)
+        {
+            foreach (var f in AllFlags)
+            {
+                if (f.Index < _workspace.Flags.Length)
+                    _workspace.Flags[f.Index] = f.IsSet;
+            }
+            foreach (var w in AllWorkValues)
+            {
+                if (w.Index < _workspace.Values.Length)
+                    _workspace.Values[w.Index] = (ushort)w.Value;
+            }
+            _workspace.Save();
+        }
+        else if (_saveFile is SAV9ZA za)
         {
             var flagStorage = za.Blocks.Event;
             foreach (var f in AllFlags)
@@ -205,6 +271,34 @@ public sealed class EventFlagsViewModel : ReactiveObject
                     workStorage.SetValue(w.Index, (ulong)w.Value);
             }
         }
+        else if (_saveFile is SAV8BS bs)
+        {
+            var obj = bs.FlagWork;
+            foreach (var f in AllFlags)
+            {
+                if (f.Index < obj.CountFlag)
+                    obj.SetFlag(f.Index, f.IsSet);
+            }
+            foreach (var w in AllWorkValues)
+            {
+                if (w.Index < obj.CountWork)
+                    obj.SetWork(w.Index, (ushort)w.Value);
+            }
+        }
+        else if (_saveFile is SAV7b gg)
+        {
+            var ew = gg.EventWork;
+            foreach (var f in AllFlags)
+            {
+                if (f.Index < ew.CountFlag)
+                    ew.SetFlag(f.Index, f.IsSet);
+            }
+            foreach (var w in AllWorkValues)
+            {
+                if (w.Index < ew.CountWork)
+                    ew.SetWork(w.Index, w.Value);
+            }
+        }
         else
         {
             if (_flagArray != null)
@@ -213,10 +307,15 @@ public sealed class EventFlagsViewModel : ReactiveObject
                     _flagArray.SetEventFlag(f.Index, f.IsSet);
             }
 
-            if (_workArray != null)
+            if (_saveFile is IEventWorkArray<ushort> ewu)
             {
                 foreach (var w in AllWorkValues)
-                    _workArray.SetWork(w.Index, (ushort)w.Value);
+                    ewu.SetWork(w.Index, (ushort)w.Value);
+            }
+            else if (_saveFile is IEventWorkArray<byte> ewb)
+            {
+                foreach (var w in AllWorkValues)
+                    ewb.SetWork(w.Index, (byte)w.Value);
             }
         }
 

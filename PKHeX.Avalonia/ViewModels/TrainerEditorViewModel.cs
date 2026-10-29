@@ -21,6 +21,16 @@ public sealed class TrainerEditorViewModel : ReactiveObject
     private int _language;
     private int _badges;
 
+    // Special Game Currencies & Ranks
+    private uint _leaguePoints;
+    private uint _blueberryPoints;
+    private uint _watts;
+    private int _battlePoints;
+    private uint _meritPoints;
+    private uint _festivalCoins;
+    private uint _pokeMiles;
+    private uint _expeditionRank;
+
     public SaveFile SaveFile => _saveFile;
 
     public string OT
@@ -79,67 +89,63 @@ public sealed class TrainerEditorViewModel : ReactiveObject
         set => this.RaiseAndSetIfChanged(ref _language, value);
     }
 
-    public ObservableCollection<ComboItem> LanguageList { get; } = [];
-    public ObservableCollection<BadgeItemViewModel> BadgeList { get; } = [];
-
-    public TrainerEditorViewModel(SaveFile sav)
+    public uint LeaguePoints
     {
-        _saveFile = sav;
+        get => _leaguePoints;
+        set => this.RaiseAndSetIfChanged(ref _leaguePoints, value);
+    }
 
-        if (sav is SAV9ZA zaInit)
-        {
-            ZASaveUtil.EnsureBlockTypes(zaInit);
-        }
+    public uint BlueberryPoints
+    {
+        get => _blueberryPoints;
+        set => this.RaiseAndSetIfChanged(ref _blueberryPoints, value);
+    }
 
-        _ot = sav.OT;
-        _gender = sav.Gender;
-        _tid = sav.TID16;
-        _sid = sav.SID16;
-        _money = sav.Money;
-        _maxMoney = (uint)sav.MaxMoney;
-        _hours = sav.PlayedHours;
-        _minutes = sav.PlayedMinutes;
-        _seconds = sav.PlayedSeconds;
-        _language = sav.Language;
-        _badges = GetBadges(sav);
-        HasBadges = sav is SAV1 or SAV2 or SAV3 or SAV4 or SAV6 or SAV8SWSH;
+    public uint Watts
+    {
+        get => _watts;
+        set => this.RaiseAndSetIfChanged(ref _watts, Math.Clamp(value, 0, 9_999_999));
+    }
 
-        // Languages
-        foreach (LanguageID lang in Enum.GetValues<LanguageID>())
-        {
-            if (lang > 0 && (int)lang <= 10)
-                LanguageList.Add(new ComboItem((int)lang, lang.ToString()));
-        }
+    public int BattlePoints
+    {
+        get => _battlePoints;
+        set => this.RaiseAndSetIfChanged(ref _battlePoints, Math.Clamp(value, 0, 9999));
+    }
 
-        // Badges (8 to 16 depending on game)
-        int badgeCount = sav.Generation == 2 ? 16 : 8;
-        for (int i = 0; i < badgeCount; i++)
-        {
-            bool hasBadge = (_badges & (1 << i)) != 0;
-            BadgeList.Add(new BadgeItemViewModel(i + 1, $"Badge {i + 1}", hasBadge));
-        }
+    public uint MeritPoints
+    {
+        get => _meritPoints;
+        set => this.RaiseAndSetIfChanged(ref _meritPoints, Math.Clamp(value, 0, 99_999));
+    }
 
-        if (sav is SAV9ZA za)
-        {
-            _royaleRegular = za.TicketPointsRoyale;
-            _royaleInfinite = za.TicketPointsRoyaleInfinite;
-            _coordX = za.Coordinates.X;
-            _coordY = za.Coordinates.Y;
-            _coordZ = za.Coordinates.Z;
-            _coordRotation = za.Coordinates.Rotation;
-            _mapName = za.Coordinates.Map;
+    public uint FestivalCoins
+    {
+        get => _festivalCoins;
+        set => this.RaiseAndSetIfChanged(ref _festivalCoins, Math.Clamp(value, 0, 9_999_999));
+    }
 
-            if (za.SaveRevision != 0)
-            {
-                _hyperspacePoints = za.GetValue<uint>(SaveBlockAccessor9ZA.KHyperspaceSurveyPoints);
-                var streetBlock = za.Blocks.GetBlock(SaveBlockAccessor9ZA.KStreetName);
-                _streetName = za.GetString(streetBlock.Data);
-            }
-        }
+    public uint PokeMiles
+    {
+        get => _pokeMiles;
+        set => this.RaiseAndSetIfChanged(ref _pokeMiles, Math.Clamp(value, 0, 9_999_999));
+    }
+
+    public uint ExpeditionRank
+    {
+        get => _expeditionRank;
+        set => this.RaiseAndSetIfChanged(ref _expeditionRank, Math.Clamp(value, 0, 10));
     }
 
     public bool HasBadges { get; }
     public bool IsZA => _saveFile is SAV9ZA;
+    public bool IsSV => _saveFile is SAV9SV;
+    public bool IsSWSH => _saveFile is SAV8SWSH;
+    public bool IsLA => _saveFile is SAV8LA;
+    public bool IsBDSP => _saveFile is SAV8BS;
+    public bool IsGen7 => _saveFile is SAV7;
+    public bool IsGen6 => _saveFile is SAV6;
+    public bool HasBattlePoints => _saveFile is SAV8SWSH or SAV8BS or SAV7 or SAV6;
 
     // Legends Z-A Specific Fields
     private uint _royaleRegular;
@@ -213,10 +219,97 @@ public sealed class TrainerEditorViewModel : ReactiveObject
         set => this.RaiseAndSetIfChanged(ref _zaStatusMessage, value);
     }
 
-    public void SetMaxCash()
+    public ObservableCollection<ComboItem> LanguageList { get; } = [];
+    public ObservableCollection<BadgeItemViewModel> BadgeList { get; } = [];
+
+    public TrainerEditorViewModel(SaveFile sav)
     {
-        Money = _maxMoney;
+        _saveFile = sav;
+
+        ZASaveUtil.EnsureBlockTypes(sav);
+
+        _ot = sav.OT;
+        _gender = sav.Gender;
+        _tid = sav.TID16;
+        _sid = sav.SID16;
+        _money = sav.Money;
+        _maxMoney = (uint)sav.MaxMoney;
+        _hours = sav.PlayedHours;
+        _minutes = sav.PlayedMinutes;
+        _seconds = sav.PlayedSeconds;
+        _language = sav.Language;
+        _badges = GetBadges(sav);
+        HasBadges = sav is SAV1 or SAV2 or SAV3 or SAV4 or SAV6 or SAV8SWSH;
+
+        // Languages
+        foreach (LanguageID lang in Enum.GetValues<LanguageID>())
+        {
+            if (lang > 0 && (int)lang <= 10)
+                LanguageList.Add(new ComboItem((int)lang, lang.ToString()));
+        }
+
+        // Badges (8 to 16 depending on game)
+        int badgeCount = sav.Generation == 2 ? 16 : 8;
+        for (int i = 0; i < badgeCount; i++)
+        {
+            bool hasBadge = (_badges & (1 << i)) != 0;
+            BadgeList.Add(new BadgeItemViewModel(i + 1, $"Badge {i + 1}", hasBadge));
+        }
+
+        // Special Game Currencies
+        if (sav is SAV9SV sv)
+        {
+            _leaguePoints = sv.LeaguePoints;
+            _blueberryPoints = sv.BlueberryPoints;
+        }
+        else if (sav is SAV8SWSH swsh)
+        {
+            _watts = swsh.MyStatus.Watt;
+            _battlePoints = swsh.Misc.BP;
+        }
+        else if (sav is SAV8BS bs)
+        {
+            _battlePoints = (int)bs.BattleTower.BP;
+        }
+        else if (sav is SAV8LA la)
+        {
+            _meritPoints = (uint)la.Blocks.GetBlockValue(SaveBlockAccessor8LA.KMeritCurrent);
+            _expeditionRank = (uint)la.Blocks.GetBlockValue(SaveBlockAccessor8LA.KExpeditionTeamRank);
+        }
+        else if (sav is SAV7 s7)
+        {
+            _festivalCoins = (uint)s7.Festa.FestaCoins;
+            _battlePoints = (int)s7.Misc.BP;
+        }
+        else if (sav is SAV6 s6)
+        {
+            _pokeMiles = (uint)s6.GetRecord(63);
+            _battlePoints = s6.BP;
+        }
+        else if (sav is SAV9ZA za)
+        {
+            _royaleRegular = za.TicketPointsRoyale;
+            _royaleInfinite = za.TicketPointsRoyaleInfinite;
+            _coordX = za.Coordinates.X;
+            _coordY = za.Coordinates.Y;
+            _coordZ = za.Coordinates.Z;
+            _coordRotation = za.Coordinates.Rotation;
+            _mapName = za.Coordinates.Map;
+
+            if (za.SaveRevision != 0)
+            {
+                _hyperspacePoints = za.GetValue<uint>(SaveBlockAccessor9ZA.KHyperspaceSurveyPoints);
+                var streetBlock = za.Blocks.GetBlock(SaveBlockAccessor9ZA.KStreetName);
+                _streetName = za.GetString(streetBlock.Data);
+            }
+        }
     }
+
+    public void SetMaxCash() => Money = _maxMoney;
+    public void SetMaxLP() => LeaguePoints = 9_999_999;
+    public void SetMaxBP() => BlueberryPoints = 9_999_999;
+    public void SetMaxWatts() => Watts = 9_999_999;
+    public void SetMaxMerit() => MeritPoints = 99_999;
 
     public void MaxRoyaleRegular() => RoyaleRegular = 310_000;
     public void MaxRoyaleInfinite() => RoyaleInfinite = 50_000;
@@ -258,7 +351,36 @@ public sealed class TrainerEditorViewModel : ReactiveObject
         _saveFile.PlayedSeconds = _seconds;
         _saveFile.Language = _language;
 
-        if (_saveFile is SAV9ZA za)
+        if (_saveFile is SAV9SV sv)
+        {
+            sv.LeaguePoints = _leaguePoints;
+            sv.BlueberryPoints = _blueberryPoints;
+        }
+        else if (_saveFile is SAV8SWSH swsh)
+        {
+            swsh.MyStatus.Watt = _watts;
+            swsh.Misc.BP = _battlePoints;
+        }
+        else if (_saveFile is SAV8BS bs)
+        {
+            bs.BattleTower.BP = (ushort)_battlePoints;
+        }
+        else if (_saveFile is SAV8LA la)
+        {
+            la.Blocks.SetBlockValue(SaveBlockAccessor8LA.KMeritCurrent, _meritPoints);
+            la.Blocks.SetBlockValue(SaveBlockAccessor8LA.KExpeditionTeamRank, _expeditionRank);
+        }
+        else if (_saveFile is SAV7 s7)
+        {
+            s7.Festa.FestaCoins = (int)_festivalCoins;
+            s7.Misc.BP = (uint)_battlePoints;
+        }
+        else if (_saveFile is SAV6 s6)
+        {
+            s6.SetRecord(63, (int)_pokeMiles);
+            s6.BP = (ushort)_battlePoints;
+        }
+        else if (_saveFile is SAV9ZA za)
         {
             za.TicketPointsRoyale = _royaleRegular;
             za.TicketPointsRoyaleInfinite = _royaleInfinite;

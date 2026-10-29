@@ -27,6 +27,9 @@ public partial class MainWindow : Window
         BoxViewerControl.RequestEditorPkm = () => ViewModel.Editor.PreparePKM();
         EditorControl.LegalityReportRequested += OpenLegalityReport;
         EditorControl.ExportPKMRequested += async () => await ExportActivePKMAsync();
+        EditorControl.RibbonsRequested += OpenRibbonEditor;
+        EditorControl.ShowdownExportRequested += async () => await ViewModel.ShowdownExportPKMAsync(Clipboard);
+        EditorControl.ShowdownImportRequested += async () => await ViewModel.ShowdownImportPKMAsync(Clipboard);
     }
 
     private void OnWindowDragOver(object? sender, DragEventArgs e)
@@ -97,43 +100,27 @@ public partial class MainWindow : Window
 
     public void OnMenuExitClick(object? sender, RoutedEventArgs e) => Close();
 
-    private void ExportShowdown()
-    {
-        if (ViewModel.SaveFile == null)
-        {
-            ViewModel.StatusMessage = "No save file loaded.";
-            return;
-        }
+    public async void OnMenuImportShowdownClick(object? sender, RoutedEventArgs e) => await ViewModel.ShowdownImportPKMAsync(Clipboard);
+    public async void OnNativeImportShowdownClick(object? sender, EventArgs e) => await ViewModel.ShowdownImportPKMAsync(Clipboard);
 
-        try
-        {
-            var sav = ViewModel.SaveFile;
-            var boxPkms = sav.GetBoxData(ViewModel.CurrentBoxIndex);
-            var sb = new StringBuilder();
-            foreach (var pk in boxPkms)
-            {
-                if (pk.Species != 0)
-                {
-                    sb.AppendLine(ShowdownParsing.GetShowdownText(pk));
-                    sb.AppendLine();
-                }
-            }
+    public async void OnMenuExportShowdownPKMClick(object? sender, RoutedEventArgs e) => await ViewModel.ShowdownExportPKMAsync(Clipboard);
+    public async void OnNativeExportShowdownPKMClick(object? sender, EventArgs e) => await ViewModel.ShowdownExportPKMAsync(Clipboard);
 
-            var showdownText = sb.ToString();
-            if (Clipboard != null)
-            {
-                Clipboard.SetTextAsync(showdownText);
-                ViewModel.StatusMessage = $"Copied Box {ViewModel.CurrentBoxIndex + 1} Showdown set to clipboard.";
-            }
-        }
-        catch (Exception ex)
-        {
-            ViewModel.StatusMessage = $"Showdown export error: {ex.Message}";
-        }
-    }
+    public async void OnMenuExportShowdownPartyClick(object? sender, RoutedEventArgs e) => await ViewModel.ShowdownExportPartyAsync(Clipboard);
+    public async void OnNativeExportShowdownPartyClick(object? sender, EventArgs e) => await ViewModel.ShowdownExportPartyAsync(Clipboard);
 
-    public void OnMenuExportShowdownClick(object? sender, RoutedEventArgs e) => ExportShowdown();
-    public void OnNativeMenuExportShowdownClick(object? sender, EventArgs e) => ExportShowdown();
+    public async void OnMenuExportShowdownClick(object? sender, RoutedEventArgs e) => await ViewModel.ShowdownExportCurrentBoxAsync(Clipboard);
+    public async void OnNativeMenuExportShowdownClick(object? sender, EventArgs e) => await ViewModel.ShowdownExportCurrentBoxAsync(Clipboard);
+    public async void OnNativeExportShowdownBoxClick(object? sender, EventArgs e) => await ViewModel.ShowdownExportCurrentBoxAsync(Clipboard);
+
+    public async void OnNativeLoadBoxesClick(object? sender, EventArgs e) => await ViewModel.LoadBoxesAsync(StorageProvider);
+    public async void OnMenuLoadBoxesClick(object? sender, RoutedEventArgs e) => await ViewModel.LoadBoxesAsync(StorageProvider);
+
+    public async void OnNativeDumpCurrentBoxClick(object? sender, EventArgs e) => await ViewModel.DumpCurrentBoxAsync(StorageProvider);
+    public async void OnMenuDumpCurrentBoxClick(object? sender, RoutedEventArgs e) => await ViewModel.DumpCurrentBoxAsync(StorageProvider);
+
+    public async void OnNativeDumpAllBoxesClick(object? sender, EventArgs e) => await ViewModel.DumpAllBoxesAsync(StorageProvider);
+    public async void OnMenuDumpAllBoxesClick(object? sender, RoutedEventArgs e) => await ViewModel.DumpAllBoxesAsync(StorageProvider);
 
     public async Task ExportActivePKMAsync()
     {
@@ -158,12 +145,53 @@ public partial class MainWindow : Window
 
     public async void OnExportPKMClick(object? sender, RoutedEventArgs? e) => await ExportActivePKMAsync();
 
-    public void OnMenuAboutClick(object? sender, RoutedEventArgs e) => ShowAbout();
-    public void OnNativeMenuAboutClick(object? sender, EventArgs e) => ShowAbout();
+    public void OnMenuAboutClick(object? sender, RoutedEventArgs e) => OpenAbout();
+    public void OnNativeMenuAboutClick(object? sender, EventArgs e) => OpenAbout();
 
-    private void ShowAbout()
+    public void OnNativeOpenDaycareClick(object? sender, EventArgs e) => OpenDaycare();
+    public void OnOpenDaycareClick(object? sender, RoutedEventArgs e) => OpenDaycare();
+
+    private async void OpenDaycare()
     {
-        ViewModel.StatusMessage = "PKHeX - Avalonia macOS Port (Native .NET 10.0)";
+        if (ViewModel.SaveFile == null)
+            return;
+
+        var win = new DaycareWindow
+        {
+            DataContext = new DaycareViewModel(ViewModel.SaveFile),
+            RequestEditorPokemon = () => ViewModel.Editor.PreparePKM()
+        };
+        win.PokemonSelected += pkm =>
+        {
+            ViewModel.Editor.PopulateFields(pkm);
+            ViewModel.StatusMessage = $"Loaded {pkm.Nickname} from Daycare into Editor.";
+        };
+        var result = await win.ShowDialog<bool>(this);
+        if (result)
+        {
+            ViewModel.StatusMessage = "Daycare changes saved.";
+        }
+    }
+
+    private async void OpenRibbonEditor()
+    {
+        var pk = ViewModel.Editor.PreparePKM();
+        var win = new RibbonEditorWindow
+        {
+            DataContext = new RibbonEditorViewModel(pk)
+        };
+        var res = await win.ShowDialog<bool>(this);
+        if (res)
+        {
+            ViewModel.Editor.PopulateFields(pk);
+            ViewModel.StatusMessage = $"Updated ribbons for {pk.Nickname}.";
+        }
+    }
+
+    private async void OpenAbout()
+    {
+        var win = new AboutWindow();
+        await win.ShowDialog(this);
     }
 
     public void OnPreviousBoxClick(object? sender, RoutedEventArgs e) => ViewModel.PreviousBox();
@@ -339,12 +367,6 @@ public partial class MainWindow : Window
 
     public void OnNativeOpenAboutClick(object? sender, EventArgs e) => OpenAbout();
     public void OnOpenAboutClick(object? sender, RoutedEventArgs e) => OpenAbout();
-
-    private async void OpenAbout()
-    {
-        var win = new AboutWindow();
-        await win.ShowDialog(this);
-    }
 
     public void OnNativeOpenDonutsClick(object? sender, EventArgs e) => OpenDonuts();
     public void OnOpenDonutsClick(object? sender, RoutedEventArgs e) => OpenDonuts();

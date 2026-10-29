@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using Avalonia.Media.Imaging;
 using PKHeX.Core;
 using PKHeX.Drawing.PokeSprite;
@@ -40,6 +41,7 @@ public sealed class PKMEditorViewModel : ReactiveObject, IPKMView
 
     // Stats Tab
     private int _ivHp, _ivAtk, _ivDef, _ivSpe, _ivSpa, _ivSpd;
+    private bool _htHp, _htAtk, _htDef, _htSpe, _htSpa, _htSpd;
     private int _evHp, _evAtk, _evDef, _evSpe, _evSpa, _evSpd;
     private int _statHp, _statAtk, _statDef, _statSpe, _statSpa, _statSpd;
     private int _dynamaxLevel;
@@ -61,6 +63,8 @@ public sealed class PKMEditorViewModel : ReactiveObject, IPKMView
     private byte _friendship = 70;
     private string _pidHex = "00000000";
     private int _language = 2; // English default
+    private int _pokerusStrain;
+    private int _pokerusDays;
 
     #region Dropdown Collections
     public List<ComboItem> SpeciesList { get; } = [];
@@ -356,6 +360,52 @@ public sealed class PKMEditorViewModel : ReactiveObject, IPKMView
     public int IV_SPA { get => _ivSpa; set { this.RaiseAndSetIfChanged(ref _ivSpa, Math.Clamp(value, 0, 31)); RecalculateStats(); } }
     public int IV_SPD { get => _ivSpd; set { this.RaiseAndSetIfChanged(ref _ivSpd, Math.Clamp(value, 0, 31)); RecalculateStats(); } }
 
+    public bool CanHyperTrain => _entity is IHyperTrain;
+    public bool HT_HP { get => _htHp; set { this.RaiseAndSetIfChanged(ref _htHp, value); RecalculateStats(); } }
+    public bool HT_ATK { get => _htAtk; set { this.RaiseAndSetIfChanged(ref _htAtk, value); RecalculateStats(); } }
+    public bool HT_DEF { get => _htDef; set { this.RaiseAndSetIfChanged(ref _htDef, value); RecalculateStats(); } }
+    public bool HT_SPE { get => _htSpe; set { this.RaiseAndSetIfChanged(ref _htSpe, value); RecalculateStats(); } }
+    public bool HT_SPA { get => _htSpa; set { this.RaiseAndSetIfChanged(ref _htSpa, value); RecalculateStats(); } }
+    public bool HT_SPD { get => _htSpd; set { this.RaiseAndSetIfChanged(ref _htSpd, value); RecalculateStats(); } }
+
+    public void HyperTrainAll()
+    {
+        if (!CanHyperTrain) return;
+        _htHp = _htAtk = _htDef = _htSpe = _htSpa = _htSpd = true;
+        this.RaisePropertyChanged(nameof(HT_HP));
+        this.RaisePropertyChanged(nameof(HT_ATK));
+        this.RaisePropertyChanged(nameof(HT_DEF));
+        this.RaisePropertyChanged(nameof(HT_SPE));
+        this.RaisePropertyChanged(nameof(HT_SPA));
+        this.RaisePropertyChanged(nameof(HT_SPD));
+        RecalculateStats();
+    }
+
+    public void HyperTrainClear()
+    {
+        if (!CanHyperTrain) return;
+        _htHp = _htAtk = _htDef = _htSpe = _htSpa = _htSpd = false;
+        this.RaisePropertyChanged(nameof(HT_HP));
+        this.RaisePropertyChanged(nameof(HT_ATK));
+        this.RaisePropertyChanged(nameof(HT_DEF));
+        this.RaisePropertyChanged(nameof(HT_SPE));
+        this.RaisePropertyChanged(nameof(HT_SPA));
+        this.RaisePropertyChanged(nameof(HT_SPD));
+        RecalculateStats();
+    }
+
+    public string HiddenPowerDisplay
+    {
+        get
+        {
+            if (_entity == null) return "None";
+            int hpType = _entity.HPType;
+            if (hpType >= 0 && hpType < GameInfo.Strings.types.Length - 1)
+                return GameInfo.Strings.types[hpType + 1];
+            return "None";
+        }
+    }
+
     public int EV_HP { get => _evHp; set { this.RaiseAndSetIfChanged(ref _evHp, Math.Clamp(value, 0, 252)); RecalculateStats(); } }
     public int EV_ATK { get => _evAtk; set { this.RaiseAndSetIfChanged(ref _evAtk, Math.Clamp(value, 0, 252)); RecalculateStats(); } }
     public int EV_DEF { get => _evDef; set { this.RaiseAndSetIfChanged(ref _evDef, Math.Clamp(value, 0, 252)); RecalculateStats(); } }
@@ -408,6 +458,64 @@ public sealed class PKMEditorViewModel : ReactiveObject, IPKMView
     public byte Friendship { get => _friendship; set => this.RaiseAndSetIfChanged(ref _friendship, value); }
     public string PIDHex { get => _pidHex; set => this.RaiseAndSetIfChanged(ref _pidHex, value); }
     public int Language { get => _language; set => this.RaiseAndSetIfChanged(ref _language, value); }
+
+    public bool CanPokerus => _entity.Format >= 2;
+    public int PokerusStrain
+    {
+        get => _pokerusStrain;
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _pokerusStrain, Math.Clamp(value, 0, 15));
+            this.RaisePropertyChanged(nameof(IsPokerusInfected));
+            this.RaisePropertyChanged(nameof(IsPokerusCured));
+        }
+    }
+
+    public int PokerusDays
+    {
+        get => _pokerusDays;
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _pokerusDays, Math.Clamp(value, 0, 15));
+            this.RaisePropertyChanged(nameof(IsPokerusInfected));
+            this.RaisePropertyChanged(nameof(IsPokerusCured));
+        }
+    }
+
+    public bool IsPokerusInfected => _pokerusDays > 0 || _pokerusStrain > 0;
+    public bool IsPokerusCured => _pokerusDays == 0 && _pokerusStrain > 0;
+
+    public void InfectPokerus()
+    {
+        _pokerusStrain = 1;
+        _pokerusDays = 4;
+        this.RaisePropertyChanged(nameof(PokerusStrain));
+        this.RaisePropertyChanged(nameof(PokerusDays));
+        this.RaisePropertyChanged(nameof(IsPokerusInfected));
+        this.RaisePropertyChanged(nameof(IsPokerusCured));
+    }
+
+    public void CurePokerus()
+    {
+        if (_pokerusStrain == 0) _pokerusStrain = 1;
+        _pokerusDays = 0;
+        this.RaisePropertyChanged(nameof(PokerusStrain));
+        this.RaisePropertyChanged(nameof(PokerusDays));
+        this.RaisePropertyChanged(nameof(IsPokerusInfected));
+        this.RaisePropertyChanged(nameof(IsPokerusCured));
+    }
+
+    public void ClearPokerus()
+    {
+        _pokerusStrain = 0;
+        _pokerusDays = 0;
+        this.RaisePropertyChanged(nameof(PokerusStrain));
+        this.RaisePropertyChanged(nameof(PokerusDays));
+        this.RaisePropertyChanged(nameof(IsPokerusInfected));
+        this.RaisePropertyChanged(nameof(IsPokerusCured));
+    }
+
+    public bool CanHaveRibbons => RibbonInfo.GetRibbonInfo(_entity).Any();
     #endregion
 
     public PKMEditorViewModel()
@@ -518,6 +626,21 @@ public sealed class PKMEditorViewModel : ReactiveObject, IPKMView
         pk.GetIVs(ivs);
         _ivHp = ivs[0]; _ivAtk = ivs[1]; _ivDef = ivs[2]; _ivSpe = ivs[3]; _ivSpa = ivs[4]; _ivSpd = ivs[5];
 
+        // Stats - Hyper Training
+        if (pk is IHyperTrain ht)
+        {
+            _htHp = ht.HT_HP;
+            _htAtk = ht.HT_ATK;
+            _htDef = ht.HT_DEF;
+            _htSpe = ht.HT_SPE;
+            _htSpa = ht.HT_SPA;
+            _htSpd = ht.HT_SPD;
+        }
+        else
+        {
+            _htHp = _htAtk = _htDef = _htSpe = _htSpa = _htSpd = false;
+        }
+
         // Stats - EVs
         Span<int> evs = stackalloc int[6];
         pk.GetEVs(evs);
@@ -547,6 +670,8 @@ public sealed class PKMEditorViewModel : ReactiveObject, IPKMView
         _friendship = pk.OriginalTrainerFriendship;
         _pidHex = pk.PID.ToString("X8");
         _language = pk.Language;
+        _pokerusStrain = pk.PokerusStrain;
+        _pokerusDays = pk.PokerusDays;
 
         UpdateFormsAndAbilities();
         RecalculateStats();
@@ -582,6 +707,11 @@ public sealed class PKMEditorViewModel : ReactiveObject, IPKMView
         if (uint.TryParse(_pidHex, System.Globalization.NumberStyles.HexNumber, null, out var pid))
             pk.PID = pid;
         pk.Language = _language;
+        if (pk.Format >= 2)
+        {
+            pk.PokerusStrain = _pokerusStrain;
+            pk.PokerusDays = _pokerusDays;
+        }
 
         // Shiny
         if (_isShiny != pk.IsShiny)
@@ -608,6 +738,17 @@ public sealed class PKMEditorViewModel : ReactiveObject, IPKMView
         // IVs
         Span<int> ivs = stackalloc int[6] { _ivHp, _ivAtk, _ivDef, _ivSpe, _ivSpa, _ivSpd };
         pk.SetIVs(ivs);
+
+        // Hyper Training
+        if (pk is IHyperTrain ht)
+        {
+            ht.HT_HP = _htHp;
+            ht.HT_ATK = _htAtk;
+            ht.HT_DEF = _htDef;
+            ht.HT_SPE = _htSpe;
+            ht.HT_SPA = _htSpa;
+            ht.HT_SPD = _htSpd;
+        }
 
         // EVs
         Span<int> evs = stackalloc int[6] { _evHp, _evAtk, _evDef, _evSpe, _evSpa, _evSpd };
@@ -668,6 +809,15 @@ public sealed class PKMEditorViewModel : ReactiveObject, IPKMView
         {
             Span<int> ivs = stackalloc int[6] { _ivHp, _ivAtk, _ivDef, _ivSpe, _ivSpa, _ivSpd };
             _entity.SetIVs(ivs);
+            if (_entity is IHyperTrain ht)
+            {
+                ht.HT_HP = _htHp;
+                ht.HT_ATK = _htAtk;
+                ht.HT_DEF = _htDef;
+                ht.HT_SPE = _htSpe;
+                ht.HT_SPA = _htSpa;
+                ht.HT_SPD = _htSpd;
+            }
             Span<int> evs = stackalloc int[6] { _evHp, _evAtk, _evDef, _evSpe, _evSpa, _evSpd };
             _entity.SetEVs(evs);
             _entity.CurrentLevel = (byte)_level;
@@ -687,6 +837,7 @@ public sealed class PKMEditorViewModel : ReactiveObject, IPKMView
         }
 
         this.RaisePropertyChanged(nameof(EV_Total));
+        this.RaisePropertyChanged(nameof(HiddenPowerDisplay));
         UpdateLegality();
     }
 

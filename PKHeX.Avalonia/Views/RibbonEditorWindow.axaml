@@ -1,0 +1,70 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:PKHeX.Avalonia.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="600"
+        x:Class="PKHeX.Avalonia.Views.RibbonEditorWindow"
+        x:DataType="vm:RibbonEditorViewModel"
+        Title="Ribbons &amp; Marks Editor"
+        Width="620" Height="640"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource AppBackgroundBrush}">
+
+    <Grid RowDefinitions="Auto, *, Auto" Margin="16">
+        <!-- Header -->
+        <Border Grid.Row="0" Classes="card" Padding="12" Margin="0,0,0,12">
+            <Grid ColumnDefinitions="*, Auto" RowDefinitions="Auto, Auto">
+                <StackPanel Grid.Row="0" Grid.Column="0" Spacing="4">
+                    <TextBlock Text="🎀 Ribbons &amp; Marks" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                    <TextBlock Text="{Binding RibbonSummary}" FontSize="12" Foreground="{DynamicResource AccentPrimaryBrush}" FontWeight="SemiBold" />
+                </StackPanel>
+
+                <!-- Search -->
+                <TextBox Grid.Row="1" Grid.Column="0" Text="{Binding SearchText, Mode=TwoWay}"
+                         Watermark="Search ribbons &amp; marks..." Height="32" Margin="0,8,8,0" />
+
+                <!-- Quick actions -->
+                <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Spacing="6" Margin="0,8,0,0">
+                    <Button Content="✓ All" Click="OnGiveAllClick" Classes="subtle" Height="32" Padding="10,0" ToolTip.Tip="Give all filtered ribbons" />
+                    <Button Content="✕ None" Click="OnClearAllClick" Classes="subtle" Height="32" Padding="10,0" ToolTip.Tip="Clear all filtered ribbons" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Ribbon List -->
+        <Border Grid.Row="1" Classes="card" Padding="8">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding FilteredRibbons}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:RibbonItemViewModel">
+                            <Border BorderBrush="#252530" BorderThickness="0,0,0,1" Padding="8,6">
+                                <Grid ColumnDefinitions="*, Auto">
+                                    <!-- Boolean Checkbox or Name -->
+                                    <CheckBox Grid.Column="0" Content="{Binding Name}" IsChecked="{Binding HasRibbon, Mode=TwoWay}"
+                                              FontSize="13" VerticalAlignment="Center" />
+
+                                    <!-- Byte Count NUD (if count type ribbon) -->
+                                    <NumericUpDown Grid.Column="1" Value="{Binding Count, Mode=TwoWay}"
+                                                   Minimum="0" Maximum="{Binding MaxCount}"
+                                                   IsVisible="{Binding IsCount}"
+                                                   Width="110" Height="28" FormatString="0"
+                                                   VerticalAlignment="Center" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Border>
+
+        <!-- Footer -->
+        <Grid Grid.Row="2" ColumnDefinitions="*, Auto" Margin="0,14,0,0">
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                <Button Content="Cancel" Click="OnCancelClick" Classes="subtle" Width="90" Height="32" />
+                <Button Content="Save Ribbons" Click="OnSaveClick" Classes="primary" Width="120" Height="32" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>
+

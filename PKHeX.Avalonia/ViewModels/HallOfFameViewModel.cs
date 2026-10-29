@@ -1,5 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using Avalonia.Media.Imaging;
 using PKHeX.Core;
 using PKHeX.Drawing.PokeSprite;
@@ -85,6 +86,48 @@ public sealed class HallOfFameViewModel : ReactiveObject
             }
             if (currentTeam.Members.Count > 0)
                 Teams.Add(currentTeam);
+        }
+        else if (sav is ISaveBlock6Main s6)
+        {
+            var fame = s6.HallOfFame;
+            for (int t = 0; t < HallOfFame6.Entries; t++)
+            {
+                var span = fame.GetEntry(t);
+                var vnd = new HallFame6Index(span[^4..]);
+                if (!vnd.HasData)
+                    continue;
+
+                int year = (int)vnd.Year + 2000;
+                var team = new HallOfFameTeamViewModel($"Championship Victory #{vnd.ClearIndex} ({year}/{vnd.Month:00}/{vnd.Day:00})");
+                for (int i = 0; i < 6; i++)
+                {
+                    var slice = span[(i * HallFame6Entity.SIZE)..];
+                    var entry = new HallFame6Entity(slice, sav.Language);
+                    if (entry.Species > 0)
+                        team.Members.Add(new HallOfFameMemberViewModel((ushort)entry.Species, entry.Nickname, (int)entry.Level, sav.Context));
+                }
+                if (team.Members.Count > 0)
+                    Teams.Add(team);
+            }
+        }
+        else if (sav is SAV3 s3)
+        {
+            var entries = HallFame3Entry.GetEntries(s3);
+            for (int t = 0; t < entries.Length; t++)
+            {
+                var entry = entries[t];
+                if (entry.Team.All(m => m.Species == 0))
+                    continue;
+
+                var team = new HallOfFameTeamViewModel($"Championship Victory #{t + 1}");
+                foreach (var m in entry.Team)
+                {
+                    if (m.Species > 0)
+                        team.Members.Add(new HallOfFameMemberViewModel(m.Species, m.Nickname, m.Level, sav.Context));
+                }
+                if (team.Members.Count > 0)
+                    Teams.Add(team);
+            }
         }
         else if (sav is SAV1 s1)
         {
