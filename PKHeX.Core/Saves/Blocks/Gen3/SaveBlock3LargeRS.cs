@@ -125,7 +125,6 @@ public sealed record SaveBlock3LargeRS(Memory<byte> Raw) : ISaveBlock3LargeHoenn
         value.CopyTo(GetMailSpan(ofs));
     }
 
-
     private const int Painting = 0x2EFC;
     private const int PaintingCount = 5;
     private Span<byte> GetPaintingSpan(int index)
@@ -146,7 +145,7 @@ public sealed record SaveBlock3LargeRS(Memory<byte> Raw) : ISaveBlock3LargeHoenn
         set => WriteUInt16LittleEndian(Data[0x30B4..], value);
     }
 
-    public Span<byte> GiftRibbons => Data.Slice(ExternalEventData - 11, 11);
+    public Span<byte> GiftRibbons => Data.Slice(0x3110, IGiftRibbons.SIZE_3);
     public int ExternalEventData => 0x311B;
     public Memory<byte> RoamerData => Raw.Slice(0x3144, Roamer3.SIZE);
 

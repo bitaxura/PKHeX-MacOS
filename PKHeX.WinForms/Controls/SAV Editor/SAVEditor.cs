@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -638,9 +639,10 @@ public partial class SAVEditor : UserControl, ISlotViewer<PictureBox>, ISaveFile
     private void B_OpenSuperTraining_Click(object sender, EventArgs e) => OpenDialog(new SAV_SuperTrain((SAV6)SAV));
     private void B_CellsStickers_Click(object sender, EventArgs e) => OpenDialog(new SAV_ZygardeCell((SAV7)SAV));
     private void B_LinkInfo_Click(object sender, EventArgs e) => OpenDialog(new SAV_Link6(SAV));
+    private void B_OpenGiftRibbons_Click(object sender, EventArgs e) => OpenDialog(new SAV_GiftRibbons((IGiftRibbons)SAV));
     private void B_OpenApricorn_Click(object sender, EventArgs e) => OpenDialog(new SAV_Apricorn((SAV4HGSS)SAV));
     private void B_OpenPokeathlon_Click(object sender, EventArgs e) => OpenDialog(new SAV_Pokeathlon4((SAV4HGSS)SAV));
-    private void B_DLC_Click(object sender, EventArgs e) => OpenDialog(new SAV_DLC5((SAV5)SAV));
+    private void B_OpenSafariZone_Click(object sender, EventArgs e) => OpenDialog(new SAV_Safari4((SAV4HGSS)SAV));
     private void B_OpenTrainerInfo_Click(object sender, EventArgs e) => OpenDialog(GetTrainerEditor(SAV));
     private void B_OpenOPowers_Click(object sender, EventArgs e) => OpenDialog(new SAV_OPower((ISaveBlock6Main)SAV));
     private void B_OpenHoneyTreeEditor_Click(object sender, EventArgs e) => OpenDialog(new SAV_HoneyTree((SAV4Sinnoh)SAV));
@@ -652,6 +654,14 @@ public partial class SAVEditor : UserControl, ISlotViewer<PictureBox>, ISaveFile
     private void B_OpenChatterEditor_Click(object sender, EventArgs e) => OpenDialog(new SAV_Chatter(SAV));
     private void B_OpenGear_Click(object sender, EventArgs e) => OpenDialog(new SAV_Gear((SAV4BR)SAV));
     private void B_Donuts_Click(object sender, EventArgs e) => OpenDialog(new SAV_Donut9a((SAV9ZA)SAV));
+
+    private void B_DLC_Click(object sender, EventArgs e)
+    {
+        if (SAV is SAV5 s5)
+            OpenDialog(new SAV_DLC5(s5));
+        else if (SAV is SAV4 s4)
+            OpenDialog(new SAV_DLC4(s4));
+    }
 
     private void B_OpenSecretBase_Click(object sender, EventArgs e)
     {
@@ -918,6 +928,27 @@ public partial class SAVEditor : UserControl, ISlotViewer<PictureBox>, ISaveFile
         if (sfd.ShowDialog() != DialogResult.OK)
             return;
         File.WriteAllBytes(sfd.FileName, jpeg);
+    }
+
+    private void B_MyWallpaper_Click(object sender, EventArgs e)
+    {
+        var sRSBox = (SAV3RSBox)SAV;
+        var cmpr = sRSBox.MyWallpaper;
+        if (!(sRSBox.MyWallpaperEnabled || cmpr.ContainsAnyExcept<byte>(0)))
+        {
+            WinFormsUtil.Alert(MsgSaveJPEGExportFail);
+            return;
+        }
+        const int width = SAV3RSBox.WP_WIDTH, height = SAV3RSBox.WP_HEIGHT;
+        var data = CMPR.Decompress(cmpr, width, height);
+        var picture = ImageUtil.GetBitmap(data, width, height, PixelFormat.Format32bppArgb);
+        string filename = "My Wallpaper";
+        using var sfd = new SaveFileDialog();
+        sfd.FileName = filename;
+        sfd.Filter = "PNG|*.png";
+        if (sfd.ShowDialog() != DialogResult.OK)
+            return;
+        picture.Save(sfd.FileName, ImageFormat.Png);
     }
 
     private void B_OpenFashion_Click(object sender, EventArgs e)
@@ -1285,6 +1316,7 @@ public partial class SAVEditor : UserControl, ISlotViewer<PictureBox>, ISaveFile
         {
             FLP_SAVtools.Visible = false;
             B_JPEG.Visible = false;
+            B_MyWallpaper.Visible = false;
             B_ConvertKorean.Visible = false;
             SL_Extra.HideAllSlots();
             return;
@@ -1298,6 +1330,7 @@ public partial class SAVEditor : UserControl, ISlotViewer<PictureBox>, ISaveFile
         B_OpenPokepuffs.Visible = sav is ISaveBlock6Main;
         B_JPEG.Visible = B_OpenLinkInfo.Visible = B_OpenSuperTraining.Visible = B_OUTPasserby.Visible = sav is ISaveBlock6Main;
         B_OpenBoxLayout.Visible = sav is IBoxDetailName;
+        B_MyWallpaper.Visible = sav is SAV3RSBox;
         B_OpenWondercards.Visible = sav is IMysteryGiftStorageProvider;
         B_OpenHallofFame.Visible = sav is ISaveBlock6Main or SAV7 or SAV3 { IsMisconfiguredSize: false } or SAV1;
         B_OpenOPowers.Visible = sav is ISaveBlock6Main;
@@ -1305,7 +1338,7 @@ public partial class SAVEditor : UserControl, ISlotViewer<PictureBox>, ISaveFile
         B_OpenBerryField.Visible = sav is SAV6XY; // OR/AS undocumented
         B_OpenFriendSafari.Visible = sav is SAV6XY;
         B_OpenEventFlags.Visible = sav is IEventFlag37 or IEventFlagProvider37 or SAV1 or SAV2 or SAV8BS or SAV7b or SAV9ZA;
-        B_DLC.Visible = sav.Generation == 5;
+        B_DLC.Visible = sav is SAV5 or SAV4HGSS or SAV4Pt;
         B_OpenPokeBeans.Visible = B_CellsStickers.Visible = B_FestivalPlaza.Visible = sav is SAV7;
 
         B_OtherSlots.Visible = sav is SAV1StadiumJ or SAV1Stadium or SAV2Stadium;
@@ -1314,6 +1347,7 @@ public partial class SAVEditor : UserControl, ISlotViewer<PictureBox>, ISaveFile
         B_OpenMiscEditor.Visible = sav is SAV2 { Version: GameVersion.C } or SAV3 or SAV4 or SAV5 or SAV8BS;
         B_Roamer.Visible = sav is SAV3 or SAV6XY;
 
+        B_OpenGiftRibbons.Visible = sav is IGiftRibbons;
         B_OpenHoneyTreeEditor.Visible = sav is SAV4Sinnoh;
         B_OpenUGSEditor.Visible = sav is SAV4Sinnoh or SAV8BS;
         B_OpenGeonetEditor.Visible = sav is SAV4;
@@ -1323,7 +1357,7 @@ public partial class SAVEditor : UserControl, ISlotViewer<PictureBox>, ISaveFile
         B_OpenBattlePass.Visible = B_OpenGear.Visible = sav is SAV4BR;
         B_OpenSealStickers.Visible = B_Poffins.Visible = sav is SAV8BS;
         B_OpenApricorn.Visible = sav is SAV4HGSS;
-        B_OpenPokeathlon.Visible = sav is SAV4HGSS;
+        B_OpenPokeathlon.Visible = B_OpenSafariZone.Visible = sav is SAV4HGSS;
         B_OpenRTCEditor.Visible = (sav.Generation == 2 && sav is not SAV2Stadium) || sav is SAV3 { SmallBlock: ISaveBlock3SmallHoenn };
         B_MailBox.Visible = sav is SAV2 or SAV2Stadium or SAV3 or SAV4 or SAV5;
 

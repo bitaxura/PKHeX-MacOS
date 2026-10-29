@@ -66,6 +66,7 @@ namespace PKHeX.WinForms.Controls
             B_VerifySaveEntities = new System.Windows.Forms.Button();
             Menu_ExportBAK = new System.Windows.Forms.Button();
             B_JPEG = new System.Windows.Forms.Button();
+            B_MyWallpaper = new System.Windows.Forms.Button();
             B_ConvertKorean = new System.Windows.Forms.Button();
             FLP_SAVtools = new System.Windows.Forms.FlowLayoutPanel();
             B_OpenTrainerInfo = new System.Windows.Forms.Button();
@@ -95,6 +96,7 @@ namespace PKHeX.WinForms.Controls
             B_OpenGeonetEditor = new System.Windows.Forms.Button();
             B_OpenUnityTowerEditor = new System.Windows.Forms.Button();
             B_OpenJoinAvenueEditor = new System.Windows.Forms.Button();
+            B_OpenSafariZone = new System.Windows.Forms.Button();
             B_OpenPokeathlon = new System.Windows.Forms.Button();
             B_OpenMedalsEditor = new System.Windows.Forms.Button();
             B_OpenChatterEditor = new System.Windows.Forms.Button();
@@ -102,6 +104,7 @@ namespace PKHeX.WinForms.Controls
             B_FestivalPlaza = new System.Windows.Forms.Button();
             B_MailBox = new System.Windows.Forms.Button();
             B_OpenApricorn = new System.Windows.Forms.Button();
+            B_OpenGiftRibbons = new System.Windows.Forms.Button();
             B_Raids = new System.Windows.Forms.Button();
             B_RaidsDLC1 = new System.Windows.Forms.Button();
             B_RaidsDLC2 = new System.Windows.Forms.Button();
@@ -443,6 +446,7 @@ namespace PKHeX.WinForms.Controls
             FLP_SAVToolsMisc.Controls.Add(B_VerifySaveEntities);
             FLP_SAVToolsMisc.Controls.Add(Menu_ExportBAK);
             FLP_SAVToolsMisc.Controls.Add(B_JPEG);
+            FLP_SAVToolsMisc.Controls.Add(B_MyWallpaper);
             FLP_SAVToolsMisc.Controls.Add(B_ConvertKorean);
             FLP_SAVToolsMisc.Dock = System.Windows.Forms.DockStyle.Fill;
             FLP_SAVToolsMisc.Location = new System.Drawing.Point(0, 0);
@@ -518,6 +522,19 @@ namespace PKHeX.WinForms.Controls
             B_JPEG.UseVisualStyleBackColor = true;
             B_JPEG.Click += B_JPEG_Click;
             // 
+            // B_MyWallpaper
+            // 
+            B_MyWallpaper.AutoSize = true;
+            B_MyWallpaper.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            B_MyWallpaper.Location = new System.Drawing.Point(101, 27);
+            B_MyWallpaper.Margin = new System.Windows.Forms.Padding(0);
+            B_MyWallpaper.Name = "B_MyWallpaper";
+            B_MyWallpaper.Size = new System.Drawing.Size(106, 27);
+            B_MyWallpaper.TabIndex = 5;
+            B_MyWallpaper.Text = "Save My Wallpaper";
+            B_MyWallpaper.UseVisualStyleBackColor = true;
+            B_MyWallpaper.Click += B_MyWallpaper_Click;
+            // 
             // B_ConvertKorean
             // 
             B_ConvertKorean.AutoSize = true;
@@ -562,6 +579,7 @@ namespace PKHeX.WinForms.Controls
             FLP_SAVtools.Controls.Add(B_OpenGeonetEditor);
             FLP_SAVtools.Controls.Add(B_OpenUnityTowerEditor);
             FLP_SAVtools.Controls.Add(B_OpenJoinAvenueEditor);
+            FLP_SAVtools.Controls.Add(B_OpenSafariZone);
             FLP_SAVtools.Controls.Add(B_OpenPokeathlon);
             FLP_SAVtools.Controls.Add(B_OpenMedalsEditor);
             FLP_SAVtools.Controls.Add(B_OpenChatterEditor);
@@ -569,6 +587,7 @@ namespace PKHeX.WinForms.Controls
             FLP_SAVtools.Controls.Add(B_FestivalPlaza);
             FLP_SAVtools.Controls.Add(B_MailBox);
             FLP_SAVtools.Controls.Add(B_OpenApricorn);
+            FLP_SAVtools.Controls.Add(B_OpenGiftRibbons);
             FLP_SAVtools.Controls.Add(B_Raids);
             FLP_SAVtools.Controls.Add(B_RaidsDLC1);
             FLP_SAVtools.Controls.Add(B_RaidsDLC2);
@@ -887,6 +906,17 @@ namespace PKHeX.WinForms.Controls
             B_OpenJoinAvenueEditor.UseVisualStyleBackColor = true;
             B_OpenJoinAvenueEditor.Click += B_OpenJoinAvenueEditor_Click;
             // 
+            // B_OpenSafariZone
+            // 
+            B_OpenSafariZone.Location = new System.Drawing.Point(2, 434);
+            B_OpenSafariZone.Margin = new System.Windows.Forms.Padding(2);
+            B_OpenSafariZone.Name = "B_OpenSafariZone";
+            B_OpenSafariZone.Size = new System.Drawing.Size(128, 44);
+            B_OpenSafariZone.TabIndex = 1;
+            B_OpenSafariZone.Text = "Safari Zone";
+            B_OpenSafariZone.UseVisualStyleBackColor = true;
+            B_OpenSafariZone.Click += B_OpenSafariZone_Click;
+            // 
             // B_OpenPokeathlon
             // 
             B_OpenPokeathlon.Location = new System.Drawing.Point(2, 434);
@@ -963,6 +993,17 @@ namespace PKHeX.WinForms.Controls
             B_OpenApricorn.Text = "Apricorns";
             B_OpenApricorn.UseVisualStyleBackColor = true;
             B_OpenApricorn.Click += B_OpenApricorn_Click;
+            // 
+            // B_OpenGiftRibbons
+            // 
+            B_OpenGiftRibbons.Location = new System.Drawing.Point(2, 530);
+            B_OpenGiftRibbons.Margin = new System.Windows.Forms.Padding(2);
+            B_OpenGiftRibbons.Name = "B_OpenGiftRibbons";
+            B_OpenGiftRibbons.Size = new System.Drawing.Size(128, 44);
+            B_OpenGiftRibbons.TabIndex = 1;
+            B_OpenGiftRibbons.Text = "Gift Ribbons";
+            B_OpenGiftRibbons.UseVisualStyleBackColor = true;
+            B_OpenGiftRibbons.Click += B_OpenGiftRibbons_Click;
             // 
             // B_Raids
             // 
@@ -1168,6 +1209,7 @@ namespace PKHeX.WinForms.Controls
         private System.Windows.Forms.ComboBox CB_SaveSlot;
         private System.Windows.Forms.Label L_SaveSlot;
         private System.Windows.Forms.Button B_JPEG;
+        private System.Windows.Forms.Button B_MyWallpaper;
         private System.Windows.Forms.Button B_SaveBoxBin;
         private System.Windows.Forms.Button B_VerifyCHK;
         private System.Windows.Forms.FlowLayoutPanel FLP_SAVtools;
@@ -1204,6 +1246,8 @@ namespace PKHeX.WinForms.Controls
         private System.Windows.Forms.Button B_FestivalPlaza;
         private System.Windows.Forms.Button B_MailBox;
         private System.Windows.Forms.Button B_OpenApricorn;
+        private System.Windows.Forms.Button B_OpenGiftRibbons;
+        private System.Windows.Forms.Button B_OpenSafariZone;
         private System.Windows.Forms.Button B_OpenPokeathlon;
         internal SlotList SL_Extra;
         private PartyEditor SL_Party;

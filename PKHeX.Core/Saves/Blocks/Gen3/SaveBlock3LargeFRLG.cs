@@ -56,7 +56,6 @@ public sealed record SaveBlock3LargeFRLG(Memory<byte> Raw) : ISaveBlock3LargeExp
     public void SetRecord(RecID3FRLG record, uint value) => WriteUInt32LittleEndian(Data[GetRecordOffset(record)..], value);
     public void AddRecord(RecID3FRLG record, uint value) => SetRecord(record, GetRecord(record) + value);
 
-
     private const int MailOffset = 0x2CD0;
     private static int GetMailOffset(int index) => (index * Mail3.SIZE) + MailOffset;
     private Span<byte> GetMailSpan(int ofs) => Data.Slice(ofs, Mail3.SIZE);
@@ -83,7 +82,7 @@ public sealed record SaveBlock3LargeFRLG(Memory<byte> Raw) : ISaveBlock3LargeExp
         set => WriteUInt16LittleEndian(Data[0x3098..], value);
     }
 
-    public Span<byte> GiftRibbons => Data.Slice(0x309C, 11);
+    public Span<byte> GiftRibbons => Data.Slice(0x309C, IGiftRibbons.SIZE_3);
     public int ExternalEventData => 0x30A7;
     public Memory<byte> RoamerData => Raw.Slice(0x30D0, Roamer3.SIZE);
 

@@ -133,6 +133,7 @@ public static class LegalityCheckResultCodeExtensions
             EffortShouldBeZero => localization.EffortShouldBeZero,
             EffortEXPIncreased => localization.EffortEXPIncreased,
             EffortUntrainedCap_0 => localization.EffortUntrainedCap,
+            EffortUntrainedMoreEXP_0 => localization.EffortUntrainedMoreEXP_0,
 
             // Evolution
             EvoInvalid => localization.EvoInvalid,
@@ -175,6 +176,7 @@ public static class LegalityCheckResultCodeExtensions
             MarkValueUnusedBitsPresent => localization.MarkValueUnusedBitsPresent,
 
             // Moves
+            MovePPMatchesPokewalker => localization.MovePPMatchesPokewalker,
             MovePPMatchesVirtualConsole => localization.MovePPMatchesVirtualConsole,
             MoveEvoFCombination_0 => localization.MoveEvoFCombination_0,
             MovePPExpectHealed_01 => localization.MovePPExpectHealed_01,

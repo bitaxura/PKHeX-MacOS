@@ -1,6 +1,7 @@
-using System.Drawing;
 using PKHeX.Core;
 using PKHeX.Drawing.Misc.Properties;
+using SkiaSharp;
+using System.Runtime.InteropServices;
 using static PKHeX.Core.GameVersion;
 
 namespace PKHeX.Drawing.Misc;
@@ -22,17 +23,27 @@ public static class WallpaperUtil
 
     private static RawImage GetWallpaper(SaveFile sav, int box)
     {
+        if (sav is SAV3Colosseum or SAV3XD) // fixed for each box
+            return GetWallpaperBitmap(sav.Version, box);
+        if (sav is SAV4BR) // fixed for each box
+            return GetWallpaperBitmap(DP, box % 16);
         if (sav is not IBoxDetailWallpaper wp)
             return DefaultWallpaper;
-
-        // City box wallpaper for Lumiose City
-        if (sav is SAV9ZA)
+        if (sav is SAV9ZA) // City box wallpaper for Lumiose City
             return Resources.box_wp02bdsp;
         if (sav is SAV8LA) // pasture for PLA
             return Resources.box_wp01bdsp;
 
         int wallpaper = wp.GetBoxWallpaper(box);
-        string s = GetWallpaperResourceName(sav.Version, wallpaper);
+        var bitmap = GetWallpaperBitmap(sav.Version, wallpaper);
+        if (sav is SAV3RSBox rsBox && wallpaper == 20) // My Wallpaper
+            DrawMyWallpaper(rsBox, box, ref bitmap);
+        return bitmap;
+    }
+
+    private static RawImage GetWallpaperBitmap(GameVersion version, int index)
+    {
+        string s = GetWallpaperResourceName(version, index);
         return (RawImage?)Resources.ResourceManager.GetObject(s) ?? DefaultWallpaper;
     }
 
@@ -60,6 +71,8 @@ public static class WallpaperUtil
     {
         SaveFileType.Emerald => "e",
         SaveFileType.FRLG when index > 12 => "frlg",
+        SaveFileType.Colosseum => "colo",
+        SaveFileType.XD => "xd",
 
         SaveFileType.Pt when index > 16 => "pt",
         SaveFileType.HGSS when index > 16 => "hgss",
@@ -87,8 +100,10 @@ public static class WallpaperUtil
         EntityContext.Gen3 when version == E => "e",
         EntityContext.Gen3 when FRLG.Contains(version) && index > 12 => "frlg",
         EntityContext.Gen3 => "rs",
+        _ when version == COLO => "colo",
+        _ when version == XD => "xd",
 
-        EntityContext.Gen4 when index <= 16 => "dp",
+        EntityContext.Gen4 when DP.Contains(version) || index <= 16 => "dp",
         EntityContext.Gen4 when version == Pt => "pt",
         EntityContext.Gen4 when HGSS.Contains(version) => "hgss",
 
@@ -100,4 +115,45 @@ public static class WallpaperUtil
         EntityContext.Gen9 => "sv",
         _ => string.Empty,
     };
+
+    private static void DrawMyWallpaper(SAV3RSBox sav, int box, ref RawImage bitmap)
+    {
+        const int width = SAV3RSBox.WP_WIDTH, height = SAV3RSBox.WP_HEIGHT;
+        var data = CMPR.Decompress(sav.MyWallpaper, width, height);
+        bitmap = bitmap.Clone();
+
+        var srcInfo = new SKImageInfo(width, height, SKColorType.Bgra8888, SKAlphaType.Unpremul);
+        var srcHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
+        try
+        {
+            using var srcBitmap = new SKBitmap();
+            srcBitmap.InstallPixels(srcInfo, srcHandle.AddrOfPinnedObject(), width * 4);
+
+            var dstInfo = new SKImageInfo(bitmap.Width, bitmap.Height, SKColorType.Bgra8888, SKAlphaType.Unpremul);
+            var dstHandle = GCHandle.Alloc(bitmap.Data, GCHandleType.Pinned);
+            try
+            {
+                using var surface = SKSurface.Create(dstInfo, dstHandle.AddrOfPinnedObject(), bitmap.Stride);
+                if (surface != null)
+                {
+                    var canvas = surface.Canvas;
+                    int halfWidth = width / 2;
+                    int srcX = halfWidth * (box % 2);
+                    var srcRect = SKRect.Create(srcX, 0, halfWidth, height);
+                    var dstRect = SKRect.Create(5, 5, 146, 106);
+                    using var paint = new SKPaint { IsAntialias = true, FilterQuality = SKFilterQuality.High };
+                    canvas.DrawBitmap(srcBitmap, srcRect, dstRect, paint);
+                    canvas.Flush();
+                }
+            }
+            finally
+            {
+                dstHandle.Free();
+            }
+        }
+        finally
+        {
+            srcHandle.Free();
+        }
+    }
 }

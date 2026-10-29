@@ -145,6 +145,7 @@ public sealed class LegalityCheckLocalization
     public string EffortShouldBeZero { get; init; } = "Cannot receive EVs.";
     public string EffortEXPIncreased { get; init; } = "All EVs are zero, but leveled above Met Level.";
     public string EffortUntrainedCap { get; init; } = "Individual EV without changing EXP cannot be greater than {0}.";
+    public string EffortUntrainedMoreEXP_0 { get; init; } = "At least {0} more EXP is needed to acquire the current number of EVs.";
 
     public string EvoInvalid { get; init; } = "Evolution not valid (or level/trade evolution unsatisfied).";
     public string EvoTradeReqOutsider { get; init; } = "Outsider {0} should have evolved into {1}.";
@@ -297,6 +298,7 @@ public sealed class LegalityCheckLocalization
     public string MoveEvoFCombination_0 { get; init; } = "Moves combinations is not compatible with {0} evolution.";
     public string MoveFExpectSingle_0 { get; init; } = "Expected: {0}";
     public string MoveKeldeoMismatch { get; init; } = "Keldeo Move/Form mismatch.";
+    public string MovePPMatchesPokewalker { get; init; } = "Move PP exactly matches values from the Pokéwalker initialization bug.";
     public string MovePPMatchesVirtualConsole { get; init; } = "Move PP exactly matches values from the 3DS Virtual Console transfer bug.";
     public string MovePPExpectHealed_01 { get; init; } = "Move {0} PP is below the amount expected ({1}).";
     public string MovePPTooHigh_01 { get; init; } = "Move {0} PP is above the amount allowed ({1}).";
